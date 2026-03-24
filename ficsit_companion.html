@@ -954,13 +954,32 @@ const STACK_SIZE = {
 };
 
 // ── GENERATOR DATA for Power tab
+// automated: false = manual fuel only. practicalMax: MW above which impractical as primary (null = unlimited)
 const GENERATORS = [
-  { id:'bio',   name:'Biomass Burner',      mw:30,    fuel:'Biomass / Solid Biofuel', color:'#78b055' },
-  { id:'coal',  name:'Coal Generator',      mw:75,    fuel:'Coal / Compacted Coal / Petroleum Coke', color:'#95a5a6' },
-  { id:'fuel',  name:'Fuel Generator',      mw:150,   fuel:'Fuel / Liquid Biofuel / Turbofuel', color:'#e8941a' },
-  { id:'geo',   name:'Geothermal Generator',mw:100,   fuel:'Free (geyser)', color:'#2ecc71' },
-  { id:'nuclear',name:'Nuclear Power Plant',mw:2500,  fuel:'Uranium / Plutonium Fuel Rods', color:'#2ecc71' },
-  { id:'alien', name:'Alien Power Augmenter',mw:500,  fuel:'SAM (Ficsite Trigon)', color:'#b06cff' },
+  { id:'bio',    name:'Biomass Burner',       mw:30,   color:'#78b055',
+    fuel:'Biomass / Solid Biofuel',
+    automated:false, practicalMax:150,
+    note:'Manual feed only — cannot be automated. Early game / emergency only.' },
+  { id:'coal',   name:'Coal Generator',       mw:75,   color:'#95a5a6',
+    fuel:'Coal / Compacted Coal / Petroleum Coke',
+    automated:true, practicalMax:3000,
+    note:'Fully automatable. Solid mid-game primary. Requires water input.' },
+  { id:'fuel',   name:'Fuel Generator',       mw:150,  color:'#e8941a',
+    fuel:'Fuel / Liquid Biofuel / Turbofuel',
+    automated:true, practicalMax:null,
+    note:'Best all-round automated generator. Turbofuel: 4.5/min per gen.' },
+  { id:'geo',    name:'Geothermal Generator', mw:100,  color:'#2ecc71',
+    fuel:'Free — no fuel required',
+    automated:true, practicalMax:null,
+    note:'No fuel cost, but node-limited. Overclock for up to 300 MW on pure geysers.' },
+  { id:'nuclear',name:'Nuclear Power Plant',  mw:2500, color:'#27ae60',
+    fuel:'Uranium / Plutonium Fuel Rods',
+    automated:true, practicalMax:null,
+    note:'2,500 MW each. Needs 0.2 fuel rods/min + active waste management.' },
+  { id:'alien',  name:'Alien Power Augmenter',mw:500,  color:'#b06cff',
+    fuel:'Ficsite Trigon (SAM chain)',
+    automated:true, practicalMax:null,
+    note:'Phase 5 endgame. Requires SAM → Reanimated SAM → Ficsite Trigon chain.' },
 ];
 
 // ══════════════════════════════════════════════════════════════
@@ -1702,56 +1721,125 @@ function renderPower(){
   const totalMW=WS.targetMW>0?WS.targetMW:loadTotal;
 
   if(totalMW<=0){
-    pane.innerHTML=`<div class="wait"><div class="wait-ico">⚡</div><div class="wait-t">Power Planner</div><div class="wait-s">Enter a MW target or add loads from your factories to calculate generator requirements.</div></div>`;
+    pane.innerHTML=`<div class="wait"><div class="wait-ico">⚡</div><div class="wait-t">Power Planner</div><div class="wait-s">Enter a MW target or add named loads on the left. Use the Import button to pull figures from the Planner tab.</div></div>`;
     return;
   }
 
-  const margin=totalMW*1.2; // 20% safety margin
+  const margin=totalMW*1.2;
 
+  // Summary cards
   let h=`<div class="pw-scards">
     <div class="pw-scard" style="--pc:var(--green)">
-      <div class="pw-sl">LOAD TOTAL</div><div class="pw-sv">${totalMW>=1000?fmt(totalMW/1000,2)+' GW':fmt(totalMW,0)+' MW'}</div><div class="pw-su">from ${WS.loads.length} source${WS.loads.length!==1?'s':''}</div>
+      <div class="pw-sl">LOAD TOTAL</div>
+      <div class="pw-sv">${totalMW>=1000?fmt(totalMW/1000,2)+' GW':fmt(totalMW,0)+' MW'}</div>
+      <div class="pw-su">${WS.loads.length>0?WS.loads.length+' named source'+(WS.loads.length!==1?'s':''):'manual target'}</div>
     </div>
     <div class="pw-scard" style="--pc:var(--ficsit)">
-      <div class="pw-sl">+20% MARGIN</div><div class="pw-sv">${margin>=1000?fmt(margin/1000,2)+' GW':fmt(margin,0)+' MW'}</div><div class="pw-su">recommended target</div>
+      <div class="pw-sl">TARGET WITH +20% MARGIN</div>
+      <div class="pw-sv">${margin>=1000?fmt(margin/1000,2)+' GW':fmt(margin,0)+' MW'}</div>
+      <div class="pw-su">recommended build target</div>
     </div>
     <div class="pw-scard" style="--pc:var(--accent)">
-      <div class="pw-sl">HEADROOM</div><div class="pw-sv">${fmt(margin-totalMW,0)} MW</div><div class="pw-su">safety buffer</div>
+      <div class="pw-sl">SAFETY HEADROOM</div>
+      <div class="pw-sv">${fmt(margin-totalMW,0)} MW</div>
+      <div class="pw-su">buffer above load</div>
     </div>
   </div>`;
 
-  // Loads breakdown
-  if(WS.loads.length>0){
+  // Load breakdown bar chart
+  if(WS.loads.length>1){
     const maxLoad=Math.max(...WS.loads.map(l=>l.mw),1);
     h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">📊 Load Breakdown</span></div><div class="pbar-w">
-      ${WS.loads.map(ld=>`<div class="pbar-r"><span class="pbar-l">${ld.name}</span><div class="pbar-fw"><div class="pbar-f" style="width:${(ld.mw/maxLoad*100).toFixed(1)}%"></div></div><span class="pbar-v">${ld.mw>=1000?fmt(ld.mw/1000,2)+' GW':fmt(ld.mw,0)+' MW'}</span></div>`).join('')}
+      ${WS.loads.map(ld=>`<div class="pbar-r">
+        <span class="pbar-l">${ld.name}</span>
+        <div class="pbar-fw"><div class="pbar-f" style="width:${(ld.mw/maxLoad*100).toFixed(1)}%"></div></div>
+        <span class="pbar-v">${ld.mw>=1000?fmt(ld.mw/1000,2)+' GW':fmt(ld.mw,0)+' MW'}</span>
+      </div>`).join('')}
     </div></div>`;
   }
 
-  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⚡ Generator Requirements</span><span class="rs-c">EXACT NEEDED + 20% MARGIN</span></div><div class="gen-grid">`;
+  // Generator requirements — with practicality context
+  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⚡ Generator Requirements</span>
+    <span class="rs-c">COUNTS ARE FOR +20% MARGIN TARGET · ${margin>=1000?fmt(margin/1000,2)+' GW':fmt(margin,0)+' MW'}</span>
+  </div>`;
+
+  // Separate into practical and reference sections based on load size
+  const practical=[], reference=[];
   GENERATORS.forEach(g=>{
+    const impractical=(!g.automated)||(g.practicalMax!==null&&totalMW>g.practicalMax);
+    if(impractical) reference.push(g); else practical.push(g);
+  });
+
+  // Primary options
+  h+=`<div class="gen-grid">`;
+  practical.forEach(g=>{
     const exactNeeded=totalMW/g.mw;
     const withMargin=margin/g.mw;
     const ceilMargin=Math.ceil(withMargin);
+    const totalOutput=ceilMargin*g.mw;
+    const surplusMW=totalOutput-totalMW;
     h+=`<div class="gen-card" style="--gc:${g.color}">
       <div class="gen-type">${g.name}</div>
-      <div class="gen-count">${ceilMargin}<span class="gen-cl"> GENERATORS</span></div>
-      <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:2px;">${fmt(exactNeeded,1)} exact · ${fmt(withMargin,1)} w/margin</div>
-      <div class="gen-fuel">${g.mw} MW each<br>${g.fuel}</div>
+      <div class="gen-count">${ceilMargin}<span class="gen-cl"> BUILDINGS</span></div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:1px;">
+        ${fmt(exactNeeded,1)} exact · ${fmt(withMargin,2)} w/margin
+      </div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--green);margin-top:2px;">
+        ${totalOutput>=1000?fmt(totalOutput/1000,2)+' GW':fmt(totalOutput,0)+' MW'} total output
+        · +${surplusMW>=1000?fmt(surplusMW/1000,2)+' GW':fmt(surplusMW,0)+' MW'} surplus
+      </div>
+      <div class="gen-fuel" style="margin-top:5px;">${g.mw} MW each<br>${g.fuel}<br>
+        <span style="color:var(--text3);font-size:7px;">${g.note}</span>
+      </div>
     </div>`;
   });
-  h+=`</div></div>`;
+  h+=`</div>`;
 
-  // Fuel consumption quick-ref
+  // Impractical / reference options
+  if(reference.length>0){
+    h+=`<div style="font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:1px;
+      margin:12px 0 6px;padding-top:10px;border-top:1px solid var(--border);">
+      REFERENCE ONLY — NOT RECOMMENDED AT THIS SCALE
+    </div><div class="gen-grid">`;
+    reference.forEach(g=>{
+      const exactNeeded=totalMW/g.mw;
+      const withMargin=margin/g.mw;
+      const ceilMargin=Math.ceil(withMargin);
+      h+=`<div class="gen-card" style="--gc:var(--text3);opacity:0.55;">
+        <div class="gen-type" style="color:var(--text3)">${g.name}</div>
+        <div class="gen-count" style="color:var(--text3)">${ceilMargin}<span class="gen-cl"> BUILDINGS</span></div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:1px;">
+          ${fmt(exactNeeded,1)} exact · ${fmt(withMargin,2)} w/margin
+        </div>
+        <div class="gen-fuel" style="margin-top:5px;color:var(--text3)">${g.mw} MW each<br>${g.fuel}<br>
+          <span style="font-size:7px;">${g.note}</span>
+        </div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+
+  // Fuel consumption reference
   h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⛽ Fuel Consumption Reference</span></div>
-  <table class="trk-tbl"><thead><tr><th>GENERATOR</th><th>MW</th><th>FUEL</th><th>CONSUME RATE</th></tr></thead><tbody>
-    <tr><td>Coal Generator</td><td>75</td><td>Coal</td><td>22.5/min per gen</td></tr>
-    <tr><td>Coal Generator</td><td>75</td><td>Compacted Coal</td><td>11.25/min per gen</td></tr>
-    <tr><td>Coal Generator</td><td>75</td><td>Petroleum Coke</td><td>22.5/min per gen</td></tr>
-    <tr><td>Fuel Generator</td><td>150</td><td>Fuel</td><td>12/min per gen</td></tr>
-    <tr><td>Fuel Generator</td><td>150</td><td>Turbofuel</td><td>4.5/min per gen</td></tr>
-    <tr><td>Nuclear Power Plant</td><td>2500</td><td>Uranium Fuel Rod</td><td>0.2/min per plant</td></tr>
-    <tr><td>Nuclear Power Plant</td><td>2500</td><td>Plutonium Fuel Rod</td><td>0.1/min per plant</td></tr>
+  <table class="trk-tbl"><thead><tr><th>GENERATOR</th><th>MW</th><th>FUEL</th><th>CONSUME RATE</th><th>FOR ${totalMW>=1000?fmt(totalMW/1000,1)+' GW':fmt(totalMW,0)+' MW'} LOAD</th></tr></thead><tbody>
+    ${[
+      {gen:'Coal Generator',   mw:75,   fuel:'Coal',              rate:22.5},
+      {gen:'Coal Generator',   mw:75,   fuel:'Compacted Coal',    rate:11.25},
+      {gen:'Coal Generator',   mw:75,   fuel:'Petroleum Coke',    rate:22.5},
+      {gen:'Fuel Generator',   mw:150,  fuel:'Fuel',              rate:12},
+      {gen:'Fuel Generator',   mw:150,  fuel:'Turbofuel',         rate:4.5},
+      {gen:'Nuclear Plant',    mw:2500, fuel:'Uranium Rod',       rate:0.2},
+      {gen:'Nuclear Plant',    mw:2500, fuel:'Plutonium Rod',     rate:0.1},
+    ].map(r=>{
+      const gens=totalMW/r.mw;
+      const totalFuel=gens*r.rate;
+      return `<tr>
+        <td>${r.gen}</td><td>${r.mw}</td><td>${r.fuel}</td>
+        <td>${r.rate}/min per gen</td>
+        <td style="color:var(--ficsit)">${fmt(totalFuel,1)}/min total</td>
+      </tr>`;
+    }).join('')}
   </tbody></table></div>`;
 
   pane.innerHTML=h;
