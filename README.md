@@ -4,6 +4,8 @@ A single-file production suite for **Satisfactory v1.0** (with v1.2 experimental
 
 ![FICSIT Companion](https://img.shields.io/badge/Satisfactory-v1.0%20%2B%201.2%20EXP-f5a623?style=flat-square) ![Vanilla](https://img.shields.io/badge/recipes-vanilla%20base-00d4ff?style=flat-square) ![Single file](https://img.shields.io/badge/format-single%20HTML-39d98a?style=flat-square)
 
+To run live, visit https://fromchaosimportcalm.github.io/ficsit_companion/
+
 ---
 
 ## What's in it
