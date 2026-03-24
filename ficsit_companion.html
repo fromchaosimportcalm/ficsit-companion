@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FICSIT Companion — Production Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080b0d; --bg2:#0d1217; --bg3:#131920; --bg4:#1a2230;
+  --border:#1e2d3a; --border2:#2a3f52;
+  --ficsit:#f5a623; --ficsit2:#c97d10;
+  --accent:#00d4ff; --green:#39d98a; --red:#ff5757;
+  --orange:#ff8c42; --purple:#b06cff; --teal:#4ecdc4;
+  --text:#c8dae8; --text2:#7a9bb5; --text3:#3d5a70;
+  --mono:'Share Tech Mono',monospace; --sans:'Barlow',sans-serif; --cond:'Barlow Condensed',sans-serif;
+  --lw:415px; --hh:62px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,212,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.022) 1px,transparent 1px);
+  background-size:40px 40px;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 90% 40% at 50% -5%,rgba(245,166,35,.07),transparent);}
+.app{position:relative;z-index:1;display:grid;grid-template-rows:var(--hh) 1fr;min-height:100vh;}
+.body-row{display:grid;grid-template-columns:var(--lw) 1fr;min-height:0;}
+
+/* HEADER */
+header{grid-column:1/-1;display:flex;align-items:center;border-bottom:1px solid var(--border2);
+  background:rgba(8,11,13,.96);backdrop-filter:blur(14px);position:sticky;top:0;z-index:300;}
+.hdr-logo{display:flex;align-items:center;gap:12px;padding:0 20px;border-right:1px solid var(--border);
+  height:100%;min-width:var(--lw);flex-shrink:0;}
+.logo-hex{width:36px;height:36px;flex-shrink:0;background:linear-gradient(135deg,var(--ficsit),var(--ficsit2));
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;color:#000;font-weight:bold;}
+.logo-title{font-family:var(--cond);font-size:19px;font-weight:900;letter-spacing:3px;color:var(--ficsit);text-transform:uppercase;line-height:1;}
+.logo-sub{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:2px;margin-top:3px;}
+.hdr-tabs{display:flex;align-items:stretch;height:100%;flex:1;padding:0 18px;gap:2px;}
+.tab-btn{display:flex;align-items:center;gap:7px;padding:0 18px;border:none;background:none;
+  font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);cursor:pointer;position:relative;transition:color .15s;
+  border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab-btn:hover{color:var(--text2);}
+.tab-btn.active{color:var(--ficsit);border-bottom-color:var(--ficsit);}
+.tab-icon{font-size:14px;}
+.hdr-right{display:flex;gap:6px;align-items:center;padding:0 18px;border-left:1px solid var(--border);height:100%;flex-shrink:0;}
+.hbadge{font-family:var(--mono);font-size:9px;padding:3px 7px;border:1px solid;letter-spacing:1px;white-space:nowrap;}
+.hb-o{color:var(--ficsit);border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.06);}
+.hb-b{color:var(--accent);border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.05);}
+.hb-p{color:var(--purple);border-color:rgba(176,108,255,.35);background:rgba(176,108,255,.05);}
+
+/* LEFT PANEL */
+.left-panel{border-right:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;
+  height:calc(100vh - var(--hh));position:sticky;top:var(--hh);overflow-y:auto;}
+.ps{border-bottom:1px solid var(--border);padding:13px 16px;}
+.ps:last-child{border-bottom:none;}
+.slabel{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--text3);text-transform:uppercase;
+  margin-bottom:9px;display:flex;align-items:center;gap:8px;}
+.slabel::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* form inputs */
+.fi{background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--mono);
+  font-size:12px;padding:7px 9px;outline:none;transition:border-color .2s;width:100%;}
+.fi:focus{border-color:var(--ficsit);}
+select.fi{cursor:pointer;}
+select.fi option{background:var(--bg3);}
+.fi-w60{width:64px;text-align:center;}
+.fi-w80{width:84px;text-align:center;}
+
+/* buttons */
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:6px 12px;border:1px solid;
+  cursor:pointer;transition:all .15s;text-transform:uppercase;white-space:nowrap;background:none;}
+.btn-go{background:linear-gradient(135deg,var(--ficsit),var(--ficsit2));border-color:var(--ficsit);color:#000;
+  font-family:var(--cond);font-size:15px;font-weight:900;letter-spacing:3px;padding:12px;width:100%;margin-top:10px;
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));}
+.btn-go:hover{opacity:.88;}
+.btn-ghost{border-color:var(--border);color:var(--text3);}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text2);}
+.btn-danger{border-color:rgba(255,87,87,.35);color:var(--red);background:rgba(255,87,87,.06);}
+.btn-danger:hover{background:rgba(255,87,87,.14);}
+.btn-add{border-color:rgba(245,166,35,.4);color:var(--ficsit);background:rgba(245,166,35,.08);}
+.btn-add:hover{background:rgba(245,166,35,.18);}
+.btn-w{width:100%;margin-top:6px;}
+
+/* toggle group */
+.tg{display:flex;background:var(--bg3);border:1px solid var(--border);}
+.tgo{font-family:var(--mono);font-size:10px;padding:5px 9px;cursor:pointer;color:var(--text3);
+  transition:all .15s;border:none;background:none;letter-spacing:.5px;}
+.tgo.on{background:var(--ficsit);color:#000;}
+
+/* layout helpers */
+.row{display:flex;gap:5px;align-items:center;margin-bottom:6px;}
+.row:last-child{margin-bottom:0;}
+.srow{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.srow:last-child{margin-bottom:0;}
+.slbl{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;flex:1;}
+.col{display:flex;flex-direction:column;gap:6px;}
+
+/* milestone buttons */
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.mbtn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:var(--cond);
+  font-size:12px;font-weight:700;letter-spacing:1px;padding:9px 8px 9px 12px;cursor:pointer;text-align:left;
+  transition:all .15s;text-transform:uppercase;position:relative;overflow:hidden;}
+.mbtn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mc,var(--ficsit));}
+.mbtn:hover{border-color:var(--border2);color:var(--text);background:var(--bg4);}
+.mbtn.on{border-color:var(--mc,var(--ficsit));color:var(--mc,var(--ficsit));background:var(--bg4);}
+.mbtn-t{font-size:12px;}
+.mbtn-s{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px;}
+
+/* target list */
+.tlist{display:flex;flex-direction:column;gap:4px;}
+.titem{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);
+  padding:6px 10px;font-family:var(--mono);font-size:11px;}
+.ti-n{flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ti-r{color:var(--ficsit);min-width:44px;text-align:right;}
+.ti-u{color:var(--text3);font-size:9px;}
+.ti-x{background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:0 2px;line-height:1;transition:color .15s;}
+.ti-x:hover{color:var(--red);}
+
+/* alt panel items */
+.aitem{background:var(--bg3);border:1px solid var(--border);overflow:hidden;margin-bottom:4px;}
+.aitem-hdr{display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;transition:background .12s;}
+.aitem-hdr:hover{background:rgba(255,255,255,.02);}
+.aitem.open .aitem-hdr{border-bottom:1px solid var(--border);}
+.ai-nm{flex:1;font-family:var(--mono);font-size:10px;color:var(--text2);}
+.ai-bv{font-family:var(--mono);font-size:8px;padding:2px 5px;border:1px solid var(--border);color:var(--text3);}
+.ai-ba{font-family:var(--mono);font-size:8px;padding:2px 5px;border:1px solid rgba(0,212,255,.4);color:var(--accent);background:rgba(0,212,255,.07);}
+.ai-chv{color:var(--text3);font-size:9px;transition:transform .2s;}
+.aitem.open .ai-chv{transform:rotate(180deg);}
+.aopts{display:none;flex-direction:column;}
+.aitem.open .aopts{display:flex;}
+.aopt{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+.aopt:last-child{border-bottom:none;}
+.aopt:hover{background:rgba(255,255,255,.02);}
+.aopt.sel{background:rgba(0,212,255,.04);}
+.aopt-rd{width:11px;height:11px;border:1px solid var(--border2);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;}
+.aopt.sel .aopt-rd{border-color:var(--accent);}
+.aopt-dot{width:5px;height:5px;background:var(--accent);opacity:0;transition:opacity .15s;}
+.aopt.sel .aopt-dot{opacity:1;}
+.aopt-body{flex:1;}
+.aopt-lbl{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text);text-transform:uppercase;}
+.aopt.sel .aopt-lbl{color:var(--accent);}
+.aopt-mc{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:2px;}
+.aopt-io{font-family:var(--mono);font-size:9px;color:var(--text2);line-height:1.6;}
+.aopt-io .inp{color:#ff8c80;}.aopt-io .out{color:#80ffb4;}
+
+/* RIGHT PANEL */
+.right-panel{overflow-y:auto;height:calc(100vh - var(--hh));}
+.tab-pane{display:none;padding:20px 24px;}
+.tab-pane.active{display:block;}
+
+/* waiting state */
+.wait{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:380px;color:var(--text3);text-align:center;gap:14px;}
+.wait-ico{font-size:44px;opacity:.25;}
+.wait-t{font-family:var(--cond);font-size:18px;letter-spacing:3px;text-transform:uppercase;}
+.wait-s{font-family:var(--mono);font-size:11px;letter-spacing:1px;max-width:320px;line-height:1.7;}
+
+/* summary cards */
+.scards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px;}
+.scard{background:var(--bg2);border:1px solid var(--border);padding:13px 15px;position:relative;overflow:hidden;}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--sc,var(--ficsit));}
+.sc-l{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;}
+.sc-v{font-family:var(--cond);font-size:26px;font-weight:900;color:var(--sc,var(--ficsit));line-height:1;margin-top:4px;}
+.sc-u{font-family:var(--mono);font-size:9px;color:var(--text2);margin-top:2px;}
+
+/* section header */
+.rsec{margin-bottom:18px;}
+.rshdr{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.rs-t{font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+.rs-c{font-family:var(--mono);font-size:9px;color:var(--text3);margin-left:auto;}
+
+/* resource grid */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:6px;}
+.rcard{background:var(--bg2);border:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:9px;}
+.rcard.raw{border-left:3px solid var(--green);}
+.rcard.mid{border-left:3px solid var(--accent);}
+.rc-ico{font-size:17px;}
+.rc-inf{flex:1;min-width:0;}
+.rc-nm{font-family:var(--mono);font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rc-rt{font-family:var(--cond);font-size:16px;font-weight:700;color:var(--green);}
+.rc-u{font-family:var(--mono);font-size:9px;color:var(--text3);}
+.rc-m{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:1px;}
+
+/* alts-in-use */
+.aiu{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;align-items:center;}
+.aiu-l{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-right:2px;}
+.aiu-tag{font-family:var(--mono);font-size:9px;padding:2px 7px;border:1px solid rgba(176,108,255,.4);color:var(--purple);background:rgba(176,108,255,.07);}
+
+/* machine table */
+.mtbl{width:100%;border-collapse:collapse;}
+.mtbl th{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--text3);text-align:left;
+  padding:6px 9px;border-bottom:1px solid var(--border);background:var(--bg2);text-transform:uppercase;}
+.mtbl th:not(:first-child){text-align:right;}
+.mtbl td{padding:7px 9px;font-family:var(--mono);font-size:11px;border-bottom:1px solid rgba(30,45,58,.5);vertical-align:top;}
+.mtbl tr:last-child td{border-bottom:none;}
+.mtbl tr:hover td{background:rgba(255,255,255,.01);}
+.mtbl tr.isalt td{background:rgba(176,108,255,.025);}
+.td-nm{color:var(--text);}
+.td-ap{display:inline-block;font-family:var(--mono);font-size:8px;padding:1px 5px;
+  border:1px solid rgba(176,108,255,.4);color:var(--purple);background:rgba(176,108,255,.07);margin-left:5px;vertical-align:middle;}
+.td-ex{color:var(--accent);text-align:right;}
+.td-cl{color:var(--ficsit);text-align:right;}
+.td-ck{text-align:right;font-size:10px;}
+.ck-ok{color:var(--green);}.ck-warn{color:var(--orange);}.ck-over{color:var(--red);}
+
+/* machine type pills */
+.mpill{display:inline-block;font-family:var(--mono);font-size:8px;padding:2px 6px;letter-spacing:1px;border:1px solid;}
+.mp-sm{color:#e67e22;border-color:rgba(230,126,34,.4);}
+.mp-fo{color:#95a5a6;border-color:rgba(149,165,166,.4);}
+.mp-co{color:#3498db;border-color:rgba(52,152,219,.4);}
+.mp-as{color:#27ae60;border-color:rgba(39,174,96,.4);}
+.mp-ma{color:#e74c3c;border-color:rgba(231,76,60,.4);}
+.mp-re{color:#e8941a;border-color:rgba(232,148,26,.4);}
+.mp-bl{color:#9b59b6;border-color:rgba(155,89,182,.4);}
+.mp-pa{color:#ff5757;border-color:rgba(255,87,87,.4);}
+.mp-qe{color:#b06cff;border-color:rgba(176,108,255,.4);}
+.mp-cv{color:#00d4ff;border-color:rgba(0,212,255,.4);}
+.mp-ot{color:#7a9bb5;border-color:rgba(122,155,181,.4);}
+
+/* group header */
+.grphdr{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  padding:6px 0;margin:12px 0 4px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.grphdr:first-child{margin-top:0;}
+.grp-cnt{font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:400;}
+
+/* power bar */
+.pbar-w{background:var(--bg2);border:1px solid var(--border);padding:13px 15px;}
+.pbar-r{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.pbar-l{font-family:var(--mono);font-size:10px;color:var(--text3);width:185px;}
+.pbar-fw{flex:1;height:7px;background:var(--bg3);border:1px solid var(--border);}
+.pbar-f{height:100%;background:linear-gradient(90deg,var(--green),var(--ficsit));transition:width .4s;}
+.pbar-v{font-family:var(--mono);font-size:10px;color:var(--text2);width:76px;text-align:right;}
+
+/* REFERENCE TAB */
+.ref-lsec{margin-bottom:20px;}
+.ref-lhdr{display:flex;align-items:center;gap:10px;padding:6px 0;margin-bottom:9px;border-bottom:1px solid var(--border);}
+.ref-lnum{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;width:60px;}
+.ref-lt{font-family:var(--cond);font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+.ref-lc{font-family:var(--mono);font-size:9px;color:var(--text3);margin-left:auto;}
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:8px;}
+
+/* reference card */
+.rfc{background:var(--bg2);border:1px solid var(--border);position:relative;overflow:hidden;transition:border-color .15s;}
+.rfc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ca,var(--ficsit));opacity:.65;}
+.rfc:hover,.rfc.open{border-color:var(--border2);}
+.rfc-hdr{display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;user-select:none;}
+.rfc-hdr:hover{background:rgba(255,255,255,.015);}
+.rfc-ico{width:28px;height:28px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.rfc-tw{flex:1;min-width:0;}
+.rfc-t{font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rfc-st{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:1px;}
+.rfc-bgs{display:flex;gap:3px;flex-shrink:0;}
+.rb{font-family:var(--mono);font-size:8px;padding:2px 5px;letter-spacing:.5px;border:1px solid;}
+.rb-m{color:var(--ficsit);border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.07);}
+.rb-a{color:var(--accent);border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.06);}
+.rb-l{color:var(--purple);border-color:rgba(176,108,255,.4);background:rgba(176,108,255,.06);}
+.rb-k{color:var(--green);border-color:rgba(57,217,138,.4);background:rgba(57,217,138,.06);}
+.rfc-chv{color:var(--text3);font-size:9px;transition:transform .2s;}
+.rfc.open .rfc-chv{transform:rotate(180deg);}
+.rfc-qs{display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:9px;}
+.rfc-qi{flex:1;padding:5px 8px;border-right:1px solid var(--border);}
+.rfc-qi:last-child{border-right:none;}
+.rfc-ql{color:var(--text3);font-size:8px;}
+.rfc-qv{color:var(--text2);margin-top:2px;}
+.rfc-qv.hi{color:var(--accent);}
+.rfc-body{display:none;padding:11px 12px;}
+.rfc.open .rfc-body{display:block;}
+.io-lbl{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;}
+.io-list{display:flex;flex-direction:column;gap:3px;margin-bottom:8px;}
+.io-row{display:flex;align-items:center;gap:7px;padding:4px 8px;background:var(--bg3);font-family:var(--mono);font-size:10px;border-left:2px solid transparent;}
+.io-row.inp{border-left-color:var(--red);}
+.io-row.out{border-left-color:var(--green);}
+.io-item{flex:1;color:var(--text2);}
+.io-rate{color:var(--text3);font-size:9px;}
+.io-rate .sc{color:var(--ficsit);}
+.rfc-note{margin-top:6px;padding:6px 9px;font-family:var(--mono);font-size:9px;color:var(--text2);line-height:1.6;border-left:2px solid;}
+.rfc-note.aln{border-color:var(--accent);background:rgba(0,212,255,.04);}
+.rfc-note.lpn{border-color:var(--purple);background:rgba(176,108,255,.04);}
+.vtag{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:5px;letter-spacing:1px;}
+
+/* TRAIN TAB */
+.train-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
+.t2col-card{background:var(--bg2);border:1px solid var(--border);padding:16px;}
+.t2-title{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ficsit);margin-bottom:12px;}
+.t2-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.t2-row:last-child{margin-bottom:0;}
+.t2-lbl{font-family:var(--mono);font-size:10px;color:var(--text3);flex:1;letter-spacing:.5px;}
+.t2-val{font-family:var(--cond);font-size:22px;font-weight:900;}
+.trk-tbl{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.trk-tbl th{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--text3);text-align:left;padding:6px 9px;border-bottom:1px solid var(--border);background:var(--bg2);text-transform:uppercase;}
+.trk-tbl td{padding:6px 9px;font-family:var(--mono);font-size:11px;border-bottom:1px solid rgba(30,45,58,.5);}
+.trk-tbl tr:last-child td{border-bottom:none;}
+.trk-tbl tr:hover td{background:rgba(255,255,255,.01);}
+.train-rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:7px;margin-top:14px;}
+.trcard{background:var(--bg2);border:1px solid var(--border);padding:12px 14px;position:relative;overflow:hidden;}
+.trcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tc,var(--ficsit));}
+.trc-item{font-family:var(--mono);font-size:10px;color:var(--text2);margin-bottom:3px;}
+.trc-rate{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:6px;}
+.trc-cars{font-family:var(--cond);font-size:22px;font-weight:900;color:var(--tc,var(--ficsit));}
+.trc-cl{font-family:var(--mono);font-size:8px;color:var(--text3);}
+.trc-freq{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px;}
+
+/* POWER TAB */
+.pw-scards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+.pw-scard{background:var(--bg2);border:1px solid var(--border);padding:13px 15px;position:relative;overflow:hidden;}
+.pw-scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--pc,var(--green));}
+.pw-sl{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;}
+.pw-sv{font-family:var(--cond);font-size:26px;font-weight:900;color:var(--pc,var(--green));line-height:1;margin-top:4px;}
+.pw-su{font-family:var(--mono);font-size:9px;color:var(--text2);margin-top:2px;}
+.pw-add{display:flex;gap:5px;margin-bottom:7px;}
+.pload-list{display:flex;flex-direction:column;gap:4px;}
+.pload-i{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);padding:6px 10px;font-family:var(--mono);font-size:11px;}
+.pl-n{flex:1;color:var(--text2);}
+.pl-mw{color:var(--ficsit);min-width:56px;text-align:right;}
+.pl-rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:0 2px;line-height:1;transition:color .15s;}
+.pl-rm:hover{color:var(--red);}
+.gen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:7px;}
+.gen-card{background:var(--bg2);border:1px solid var(--border);padding:13px 15px;position:relative;overflow:hidden;}
+.gen-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gc,var(--green));}
+.gen-type{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:5px;}
+.gen-count{font-family:var(--cond);font-size:24px;font-weight:900;color:var(--gc,var(--green));line-height:1;}
+.gen-cl{font-family:var(--mono);font-size:8px;color:var(--text3);}
+.gen-fuel{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:5px;line-height:1.6;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);}
+::-webkit-scrollbar-thumb:hover{background:var(--ficsit);}
+footer{border-top:1px solid var(--border);padding:10px 22px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;text-align:center;}
+@media(max-width:1060px){:root{--lw:340px;}.scards{grid-template-columns:1fr 1fr;}.train-2col{grid-template-columns:1fr;}}
+@media(max-width:700px){.body-row{grid-template-columns:1fr;}.left-panel{height:auto;position:static;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="hdr-logo">
+    <div class="logo-hex">F</div>
+    <div>
+      <div class="logo-title">FICSIT Companion</div>
+      <div class="logo-sub">PRODUCTION PLANNER · REFERENCE · TRAIN · POWER</div>
+    </div>
+  </div>
+  <div class="hdr-tabs">
+    <button class="tab-btn active" data-tab="planner"><span class="tab-icon">⚙</span>Planner</button>
+    <button class="tab-btn" data-tab="reference"><span class="tab-icon">📋</span>Reference</button>
+    <button class="tab-btn" data-tab="train"><span class="tab-icon">🚂</span>Train</button>
+    <button class="tab-btn" data-tab="power"><span class="tab-icon">⚡</span>Power</button>
+  </div>
+  <div class="hdr-right">
+    <span class="hbadge hb-o">v1.0</span>
+    <span class="hbadge hb-b">VANILLA BASE</span>
+    <span class="hbadge hb-p" id="altBadge">0 ALTS</span>
+  </div>
+</header>
+
+<div class="body-row">
+<div class="left-panel" id="leftPanel"></div>
+<div class="right-panel">
+  <div class="tab-pane active" id="pane-planner"></div>
+  <div class="tab-pane" id="pane-reference"></div>
+  <div class="tab-pane" id="pane-train"></div>
+  <div class="tab-pane" id="pane-power"></div>
+</div>
+</div>
+
+<footer>FICSIT INC · ALL RATES AT 100% CLOCK SPEED · VANILLA RECIPES UNLESS NOTED · ONE SOURCE OF TRUTH · BUILD EFFICIENCY. EXPAND PERPETUALLY.</footer>
+</div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════════
+//  ██████╗  █████╗ ████████╗ █████╗
+//  ██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗
+//  ██║  ██║███████║   ██║   ███████║
+//  ██║  ██║██╔══██║   ██║   ██╔══██║
+//  ██████╔╝██║  ██║   ██║   ██║  ██║
+//  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
+//  SINGLE SOURCE OF TRUTH — edit here, both tabs update automatically
+//  To add a recipe: add to RECIPE_DB. To add a raw: add to RAWS.
+//  To add an alt: append to the item's array (index 0 = vanilla always).
+// ═══════════════════════════════════════════════════════════════════
+
+// ── RAWS: items with no recipe (extraction roots)
+const RAWS = {
+  'Iron Ore':          { icon:'⛏', note:'Miner. Impure×30 / Normal×60 / Pure×120 at Mk.3' },
+  'Copper Ore':        { icon:'⛏', note:'Miner.' },
+  'Coal':              { icon:'⛏', note:'Miner.' },
+  'Limestone':         { icon:'⛏', note:'Miner.' },
+  'Bauxite':           { icon:'⛏', note:'Miner. Limited nodes — plan carefully.' },
+  'Raw Quartz':        { icon:'⛏', note:'Miner.' },
+  'Caterium Ore':      { icon:'⛏', note:'Miner.' },
+  'Sulfur':            { icon:'⛏', note:'Miner.' },
+  'Uranium':           { icon:'☢',  note:'Miner. Radioactive — shield conveyor paths.' },
+  'SAM':               { icon:'🔮', note:'Miner. No node rate cap.' },
+  'Water':             { icon:'💧', note:'Water Extractor — unlimited placement.' },
+  'Crude Oil':         { icon:'🛢', note:'Oil Extractor. Normal×60 / Pure×120 at Mk.2.' },
+  'Nitrogen Gas':      { icon:'🌫', note:'Resource Well Pressurizer + Extractors.' },
+  'Heavy Oil Residue': { icon:'⬛', note:'Byproduct. Best consumed by Diluted Fuel (Blender).' },
+  'Polymer Resin':     { icon:'🟤', note:'Byproduct from Fuel refining.' },
+  'Compacted Coal':    { icon:'🖤', note:'Assembler: 5 Coal + 2.5 Sulfur → 5 Compacted Coal.' },
+  'Petroleum Coke':    { icon:'🪨', note:'Refinery: 40 HOR → 120 Coke. Coal substitute.' },
+  'Solid Biofuel':     { icon:'🌿', note:'Constructor from biomass.' },
+};
+
+// ── RECIPE_DB: item → array of variants. Index 0 = vanilla always.
+// Each variant: { label, machine, mw, icon, out:[{item,rate}], in:[{item,rate}], layer, altNote?, loopNote?, tags?[] }
+// tags: 'alt','loop','key'
+const RECIPE_DB = {
+
+// ─── L1 SMELTED / FOUNDRY ──────────────────────────────────────
+'Iron Ingot':[
+  { label:'Iron Ingot', machine:'Smelter', mw:4, icon:'🔩', layer:'L1',
+    out:[{item:'Iron Ingot',rate:30}], in:[{item:'Iron Ore',rate:30}],
+    altNote:'ALT: Iron Alloy Ingot (Foundry) — 20 Iron Ore + 20 Copper Ore → 50/min (2.5× efficiency). Pure Iron Ingot (Refinery) — 35 Ore + 20 Water → 65/min.' },
+  { label:'Iron Alloy Ingot', machine:'Foundry', mw:16, icon:'🔩', layer:'L1',
+    out:[{item:'Iron Ingot',rate:50}], in:[{item:'Iron Ore',rate:20},{item:'Copper Ore',rate:20}] },
+  { label:'Pure Iron Ingot', machine:'Refinery', mw:30, icon:'🔩', layer:'L1',
+    out:[{item:'Iron Ingot',rate:65}], in:[{item:'Iron Ore',rate:35},{item:'Water',rate:20}] },
+],
+'Copper Ingot':[
+  { label:'Copper Ingot', machine:'Smelter', mw:4, icon:'🔶', layer:'L1',
+    out:[{item:'Copper Ingot',rate:30}], in:[{item:'Copper Ore',rate:30}],
+    altNote:'ALT: Copper Alloy Ingot (Foundry) — 50 Cu Ore + 25 Fe Ore → 100/min. Pure Copper (Refinery) — 15 Ore + 10 Water → 37.5/min.' },
+  { label:'Copper Alloy Ingot', machine:'Foundry', mw:16, icon:'🔶', layer:'L1',
+    out:[{item:'Copper Ingot',rate:100}], in:[{item:'Copper Ore',rate:50},{item:'Iron Ore',rate:25}] },
+  { label:'Pure Copper Ingot', machine:'Refinery', mw:30, icon:'🔶', layer:'L1',
+    out:[{item:'Copper Ingot',rate:37.5}], in:[{item:'Copper Ore',rate:15},{item:'Water',rate:10}] },
+],
+'Caterium Ingot':[
+  { label:'Caterium Ingot', machine:'Smelter', mw:4, icon:'⚡', layer:'L1',
+    out:[{item:'Caterium Ingot',rate:15}], in:[{item:'Caterium Ore',rate:45}] },
+  { label:'Pure Caterium Ingot', machine:'Refinery', mw:30, icon:'⚡', layer:'L1',
+    out:[{item:'Caterium Ingot',rate:12}], in:[{item:'Caterium Ore',rate:24},{item:'Water',rate:24}] },
+],
+'Steel Ingot':[
+  { label:'Steel Ingot', machine:'Foundry', mw:16, icon:'⚙', layer:'L1',
+    out:[{item:'Steel Ingot',rate:45}], in:[{item:'Iron Ore',rate:45},{item:'Coal',rate:45}],
+    altNote:'ALT: Solid Steel Ingot — 40 Iron Ingot + 10 Coal → 60/min. Coke Steel — 75 Iron Ore + 75 Petroleum Coke → 100/min. Compacted Steel — 22.5 Iron Ore + 11.25 Compacted Coal → 37.5/min.' },
+  { label:'Solid Steel Ingot', machine:'Foundry', mw:16, icon:'⚙', layer:'L1',
+    out:[{item:'Steel Ingot',rate:60}], in:[{item:'Iron Ingot',rate:40},{item:'Coal',rate:10}] },
+  { label:'Coke Steel Ingot', machine:'Foundry', mw:16, icon:'⚙', layer:'L1',
+    out:[{item:'Steel Ingot',rate:100}], in:[{item:'Iron Ore',rate:75},{item:'Petroleum Coke',rate:75}] },
+  { label:'Compacted Steel Ingot', machine:'Foundry', mw:16, icon:'⚙', layer:'L1',
+    out:[{item:'Steel Ingot',rate:37.5}], in:[{item:'Iron Ore',rate:22.5},{item:'Compacted Coal',rate:11.25}] },
+],
+'Aluminum Ingot':[
+  { label:'Aluminum Ingot', machine:'Foundry', mw:16, icon:'🔷', layer:'Al',
+    out:[{item:'Aluminum Ingot',rate:60}], in:[{item:'Aluminum Scrap',rate:90},{item:'Silica',rate:75}] },
+  { label:'Pure Aluminum Ingot', machine:'Smelter', mw:4, icon:'🔷', layer:'Al',
+    out:[{item:'Aluminum Ingot',rate:30}], in:[{item:'Aluminum Scrap',rate:60}] },
+],
+
+// ─── L1 BASIC PRODUCTS ────────────────────────────────────────
+'Concrete':[
+  { label:'Concrete', machine:'Constructor', mw:4, icon:'🪨', layer:'L1',
+    out:[{item:'Concrete',rate:15}], in:[{item:'Limestone',rate:45}],
+    altNote:'ALT: Wet Concrete (Refinery) — 120 Limestone + 100 Water → 80/min. Fine Concrete (Assembler) — 80 Limestone + 7.5 Silica → 25/min.' },
+  { label:'Wet Concrete', machine:'Refinery', mw:30, icon:'🪨', layer:'L1',
+    out:[{item:'Concrete',rate:80}], in:[{item:'Limestone',rate:120},{item:'Water',rate:100}] },
+  { label:'Fine Concrete', machine:'Assembler', mw:15, icon:'🪨', layer:'L1',
+    out:[{item:'Concrete',rate:25}], in:[{item:'Limestone',rate:80},{item:'Silica',rate:7.5}] },
+],
+'Quartz Crystal':[
+  { label:'Quartz Crystal', machine:'Constructor', mw:4, icon:'💎', layer:'L1',
+    out:[{item:'Quartz Crystal',rate:22.5}], in:[{item:'Raw Quartz',rate:37.5}] },
+  { label:'Pure Quartz Crystal', machine:'Refinery', mw:30, icon:'💎', layer:'L1',
+    out:[{item:'Quartz Crystal',rate:52.5}], in:[{item:'Raw Quartz',rate:67.5},{item:'Water',rate:37.5}] },
+],
+'Silica':[
+  { label:'Silica', machine:'Constructor', mw:4, icon:'🔮', layer:'L1',
+    out:[{item:'Silica',rate:37.5}], in:[{item:'Raw Quartz',rate:22.5}],
+    altNote:'ALT: Cheap Silica (Assembler) — 11.25 Raw Quartz + 18.75 Limestone → 26.25/min. Saves quartz.' },
+  { label:'Cheap Silica', machine:'Assembler', mw:15, icon:'🔮', layer:'L1',
+    out:[{item:'Silica',rate:26.25}], in:[{item:'Raw Quartz',rate:11.25},{item:'Limestone',rate:18.75}] },
+],
+'Iron Plate':[
+  { label:'Iron Plate', machine:'Constructor', mw:4, icon:'🔲', layer:'L1',
+    out:[{item:'Iron Plate',rate:20}], in:[{item:'Iron Ingot',rate:30}],
+    altNote:'ALT: Coated Iron Plate (Assembler) — 50 Fe Ingot + 10 Plastic → 75/min. Steel Coated Plate: 3.75 Steel + 7.5 Plastic → 45/min.' },
+  { label:'Coated Iron Plate', machine:'Assembler', mw:15, icon:'🔲', layer:'L1',
+    out:[{item:'Iron Plate',rate:75}], in:[{item:'Iron Ingot',rate:50},{item:'Plastic',rate:10}] },
+  { label:'Steel Coated Plate', machine:'Assembler', mw:15, icon:'🔲', layer:'L1',
+    out:[{item:'Iron Plate',rate:45}], in:[{item:'Steel Ingot',rate:3.75},{item:'Plastic',rate:7.5}] },
+],
+'Iron Rod':[
+  { label:'Iron Rod', machine:'Constructor', mw:4, icon:'📌', layer:'L1',
+    out:[{item:'Iron Rod',rate:15}], in:[{item:'Iron Ingot',rate:15}],
+    altNote:'ALT: Steel Rod — 12 Steel Ingot → 48 Iron Rods (4× output). Best alt if steel is established.' },
+  { label:'Steel Rod', machine:'Constructor', mw:4, icon:'📌', layer:'L1',
+    out:[{item:'Iron Rod',rate:48}], in:[{item:'Steel Ingot',rate:12}] },
+],
+'Wire':[
+  { label:'Wire', machine:'Constructor', mw:4, icon:'〰', layer:'L1',
+    out:[{item:'Wire',rate:30}], in:[{item:'Copper Ingot',rate:15}],
+    altNote:'ALT: Fused Wire (Assembler) — 12 Cu + 3 Cat Ingot → 90/min (3×). Iron Wire — 12.5 Fe Ingot → 22.5/min (saves copper).' },
+  { label:'Fused Wire', machine:'Assembler', mw:15, icon:'〰', layer:'L1',
+    out:[{item:'Wire',rate:90}], in:[{item:'Copper Ingot',rate:12},{item:'Caterium Ingot',rate:3}] },
+  { label:'Iron Wire', machine:'Constructor', mw:4, icon:'〰', layer:'L1',
+    out:[{item:'Wire',rate:22.5}], in:[{item:'Iron Ingot',rate:12.5}] },
+],
+'Cable':[
+  { label:'Cable', machine:'Constructor', mw:4, icon:'🔌', layer:'L1',
+    out:[{item:'Cable',rate:30}], in:[{item:'Wire',rate:60}],
+    altNote:'ALT: Coated Cable (Refinery) — 37.5 Wire + 15 HOR → 67.5/min. Insulated Cable (Assembler) — 45 Wire + 30 Rubber → 100/min.' },
+  { label:'Coated Cable', machine:'Refinery', mw:30, icon:'🔌', layer:'L1',
+    out:[{item:'Cable',rate:67.5}], in:[{item:'Wire',rate:37.5},{item:'Heavy Oil Residue',rate:15}] },
+  { label:'Insulated Cable', machine:'Assembler', mw:15, icon:'🔌', layer:'L1',
+    out:[{item:'Cable',rate:100}], in:[{item:'Wire',rate:45},{item:'Rubber',rate:30}] },
+],
+'Quickwire':[
+  { label:'Quickwire', machine:'Constructor', mw:4, icon:'⚡', layer:'L1',
+    out:[{item:'Quickwire',rate:60}], in:[{item:'Caterium Ingot',rate:12}] },
+  { label:'Fused Quickwire', machine:'Assembler', mw:15, icon:'⚡', layer:'L1',
+    out:[{item:'Quickwire',rate:90}], in:[{item:'Caterium Ingot',rate:7.5},{item:'Copper Ingot',rate:37.5}] },
+],
+'Copper Sheet':[
+  { label:'Copper Sheet', machine:'Constructor', mw:4, icon:'🟫', layer:'L1',
+    out:[{item:'Copper Sheet',rate:10}], in:[{item:'Copper Ingot',rate:20}],
+    altNote:'ALT: Steamed Copper Sheet (Refinery) — 22.5 Cu Ingot + 22.5 Water → 22.5/min (2.25×).' },
+  { label:'Steamed Copper Sheet', machine:'Refinery', mw:30, icon:'🟫', layer:'L1',
+    out:[{item:'Copper Sheet',rate:22.5}], in:[{item:'Copper Ingot',rate:22.5},{item:'Water',rate:22.5}] },
+],
+'Screw':[
+  { label:'Screw', machine:'Constructor', mw:4, icon:'🔩', layer:'L1',
+    out:[{item:'Screw',rate:40}], in:[{item:'Iron Rod',rate:10}],
+    altNote:'ALT: Cast Screw — 12.5 Iron Ingot → 50/min. Steel Screw — 5 Steel Beam → 260/min (massive output, best late-game).' },
+  { label:'Cast Screw', machine:'Constructor', mw:4, icon:'🔩', layer:'L1',
+    out:[{item:'Screw',rate:50}], in:[{item:'Iron Ingot',rate:12.5}] },
+  { label:'Steel Screw', machine:'Constructor', mw:4, icon:'🔩', layer:'L1',
+    out:[{item:'Screw',rate:260}], in:[{item:'Steel Beam',rate:5}] },
+],
+'Steel Beam':[
+  { label:'Steel Beam', machine:'Constructor', mw:4, icon:'📏', layer:'L1',
+    out:[{item:'Steel Beam',rate:15}], in:[{item:'Steel Ingot',rate:60}] },
+],
+'Steel Pipe':[
+  { label:'Steel Pipe', machine:'Constructor', mw:4, icon:'🔧', layer:'L1',
+    out:[{item:'Steel Pipe',rate:20}], in:[{item:'Steel Ingot',rate:30}] },
+],
+
+// ─── OIL CHAIN ────────────────────────────────────────────────
+'Plastic':[
+  { label:'Plastic', machine:'Refinery', mw:30, icon:'🧴', layer:'Oil',
+    out:[{item:'Plastic',rate:20},{item:'Heavy Oil Residue',rate:10}], in:[{item:'Crude Oil',rate:30}],
+    altNote:'ALT: Recycled Plastic (Refinery) — 30 Rubber + 30 Fuel → 60/min. Halves crude oil dependency.',
+    loopNote:'LOOP: HOR byproduct feeds Diluted Fuel (Blender). Run Plastic + Rubber refs together sharing an HOR manifold. Ratio: 1 Diluted Fuel Blender per 3 Plastic/Rubber Refineries.', tags:['loop'] },
+  { label:'Recycled Plastic', machine:'Refinery', mw:30, icon:'🧴', layer:'Oil',
+    out:[{item:'Plastic',rate:60}], in:[{item:'Rubber',rate:30},{item:'Fuel',rate:30}] },
+],
+'Rubber':[
+  { label:'Rubber', machine:'Refinery', mw:30, icon:'⚫', layer:'Oil',
+    out:[{item:'Rubber',rate:20},{item:'Heavy Oil Residue',rate:10}], in:[{item:'Crude Oil',rate:30}],
+    altNote:'ALT: Recycled Rubber — 30 Plastic + 30 Fuel → 60/min. Residual Rubber — 60 Polymer Resin + 20 Water → 20/min.',
+    loopNote:'LOOP: mirrors Plastic refinery. Both share HOR bus → Diluted Fuel loop.', tags:['loop'] },
+  { label:'Recycled Rubber', machine:'Refinery', mw:30, icon:'⚫', layer:'Oil',
+    out:[{item:'Rubber',rate:60}], in:[{item:'Plastic',rate:30},{item:'Fuel',rate:30}] },
+  { label:'Residual Rubber', machine:'Refinery', mw:30, icon:'⚫', layer:'Oil',
+    out:[{item:'Rubber',rate:20}], in:[{item:'Polymer Resin',rate:60},{item:'Water',rate:20}] },
+],
+'Fuel':[
+  { label:'Fuel', machine:'Refinery', mw:30, icon:'⛽', layer:'Oil',
+    out:[{item:'Fuel',rate:40},{item:'Polymer Resin',rate:30}], in:[{item:'Crude Oil',rate:60}],
+    altNote:'ALT: Diluted Fuel (Blender) — 50 HOR + 100 Water → 100/min. Best use of HOR waste; 2.5× output vs direct. Liquid Biofuel (Refinery) — 90 Solid Biofuel + 45 Water → 60/min.' },
+  { label:'Diluted Fuel', machine:'Blender', mw:75, icon:'⛽', layer:'Oil',
+    out:[{item:'Fuel',rate:100}], in:[{item:'Heavy Oil Residue',rate:50},{item:'Water',rate:100}],
+    loopNote:'LOOP: Diluted Fuel consumes HOR byproduct from Plastic/Rubber refineries. This is the primary HOR sink.', tags:['loop','key'] },
+  { label:'Liquid Biofuel', machine:'Refinery', mw:30, icon:'⛽', layer:'Oil',
+    out:[{item:'Fuel',rate:60}], in:[{item:'Solid Biofuel',rate:90},{item:'Water',rate:45}] },
+],
+'Turbofuel':[
+  { label:'Turbofuel', machine:'Refinery', mw:30, icon:'🔥', layer:'Oil',
+    out:[{item:'Turbofuel',rate:18.75}], in:[{item:'Fuel',rate:22.5},{item:'Compacted Coal',rate:15}],
+    altNote:'ALT: Turbo Blend Fuel (Blender) — 2.5 HOR + 2 Biofuel + 3 Sulfur + 2.5 Petroleum Coke → 4 Turbofuel.' },
+  { label:'Turbo Blend Fuel', machine:'Blender', mw:75, icon:'🔥', layer:'Oil',
+    out:[{item:'Turbofuel',rate:4}], in:[{item:'Heavy Oil Residue',rate:2.5},{item:'Solid Biofuel',rate:2},{item:'Sulfur',rate:3},{item:'Petroleum Coke',rate:2.5}] },
+],
+
+// ─── ALUMINIUM CHAIN ──────────────────────────────────────────
+'Alumina Solution':[
+  { label:'Alumina Solution', machine:'Refinery', mw:30, icon:'🧪', layer:'Al',
+    out:[{item:'Alumina Solution',rate:120},{item:'Silica',rate:50}], in:[{item:'Bauxite',rate:120},{item:'Water',rate:180}],
+    altNote:'ALT: Sloppy Alumina (Refinery) — 200 Bauxite + 200 Water → 240/min with no Silica byproduct. Strongly recommended — 2× throughput per machine.', tags:['key'] },
+  { label:'Sloppy Alumina', machine:'Refinery', mw:30, icon:'🧪', layer:'Al',
+    out:[{item:'Alumina Solution',rate:240}], in:[{item:'Bauxite',rate:200},{item:'Water',rate:200}] },
+],
+'Aluminum Scrap':[
+  { label:'Aluminum Scrap', machine:'Refinery', mw:30, icon:'🔩', layer:'Al',
+    out:[{item:'Aluminum Scrap',rate:360},{item:'Water',rate:120}], in:[{item:'Alumina Solution',rate:240},{item:'Coal',rate:120}],
+    altNote:'ALT: Electrode Aluminum Scrap — 180 Alumina + 60 Petroleum Coke → 300 Scrap. Saves coal at cost of coke.',
+    loopNote:'WATER LOOP: 120 Water output can pipe back to Alumina Solution refineries — covers ~33% of water intake.', tags:['loop'] },
+  { label:'Electrode Aluminum Scrap', machine:'Refinery', mw:30, icon:'🔩', layer:'Al',
+    out:[{item:'Aluminum Scrap',rate:300}], in:[{item:'Alumina Solution',rate:180},{item:'Petroleum Coke',rate:60}] },
+],
+'Alclad Aluminum Sheet':[
+  { label:'Alclad Aluminum Sheet', machine:'Assembler', mw:15, icon:'🪟', layer:'Al',
+    out:[{item:'Alclad Aluminum Sheet',rate:30}], in:[{item:'Aluminum Ingot',rate:30},{item:'Copper Ingot',rate:10}] },
+],
+'Aluminum Casing':[
+  { label:'Aluminum Casing', machine:'Constructor', mw:4, icon:'📦', layer:'Al',
+    out:[{item:'Aluminum Casing',rate:60}], in:[{item:'Aluminum Ingot',rate:90}],
+    altNote:'ALT: Alclad Casing (Assembler) — 150 Al Ingot + 75 Cu Ingot → 112.5/min.' },
+  { label:'Alclad Casing', machine:'Assembler', mw:15, icon:'📦', layer:'Al',
+    out:[{item:'Aluminum Casing',rate:112.5}], in:[{item:'Aluminum Ingot',rate:150},{item:'Copper Ingot',rate:75}] },
+],
+
+// ─── L2 COMPONENTS ────────────────────────────────────────────
+'Reinforced Iron Plate':[
+  { label:'Reinforced Iron Plate', machine:'Assembler', mw:15, icon:'🛡', layer:'L2',
+    out:[{item:'Reinforced Iron Plate',rate:5}], in:[{item:'Iron Plate',rate:30},{item:'Screw',rate:60}],
+    altNote:'ALT: Adhered Iron Plate — 11.25 Plate + 3.75 Rubber → 3.75/min. Bolted Iron Plate — 90 Plate + 250 Screws → 15/min. Stitched — 18.75 Plate + 37.5 Wire → 5.625/min.' },
+  { label:'Adhered Iron Plate', machine:'Assembler', mw:15, icon:'🛡', layer:'L2',
+    out:[{item:'Reinforced Iron Plate',rate:3.75}], in:[{item:'Iron Plate',rate:11.25},{item:'Rubber',rate:3.75}] },
+  { label:'Bolted Iron Plate', machine:'Assembler', mw:15, icon:'🛡', layer:'L2',
+    out:[{item:'Reinforced Iron Plate',rate:15}], in:[{item:'Iron Plate',rate:90},{item:'Screw',rate:250}] },
+  { label:'Stitched Iron Plate', machine:'Assembler', mw:15, icon:'🛡', layer:'L2',
+    out:[{item:'Reinforced Iron Plate',rate:5.625}], in:[{item:'Iron Plate',rate:18.75},{item:'Wire',rate:37.5}] },
+],
+'Modular Frame':[
+  { label:'Modular Frame', machine:'Assembler', mw:15, icon:'🖼', layer:'L2',
+    out:[{item:'Modular Frame',rate:2}], in:[{item:'Reinforced Iron Plate',rate:3},{item:'Iron Rod',rate:12}],
+    altNote:'ALT: Bolted Frame — 7.5 RIP + 140 Screws → 5/min (2.5×). Steeled Frame — 2 RIP + 10 Steel Pipe → 3/min.' },
+  { label:'Bolted Frame', machine:'Assembler', mw:15, icon:'🖼', layer:'L2',
+    out:[{item:'Modular Frame',rate:5}], in:[{item:'Reinforced Iron Plate',rate:7.5},{item:'Screw',rate:140}] },
+  { label:'Steeled Frame', machine:'Assembler', mw:15, icon:'🖼', layer:'L2',
+    out:[{item:'Modular Frame',rate:3}], in:[{item:'Reinforced Iron Plate',rate:2},{item:'Steel Pipe',rate:10}] },
+],
+'Rotor':[
+  { label:'Rotor', machine:'Assembler', mw:15, icon:'🔄', layer:'L2',
+    out:[{item:'Rotor',rate:4}], in:[{item:'Iron Rod',rate:20},{item:'Screw',rate:100}],
+    altNote:'ALT: Copper Rotor — 6.25 Cu Sheet + 52.5 Screws → 11.25/min. Steel Rotor — 10 Steel Pipe + 30 Wire → 11.25/min.' },
+  { label:'Copper Rotor', machine:'Assembler', mw:15, icon:'🔄', layer:'L2',
+    out:[{item:'Rotor',rate:11.25}], in:[{item:'Copper Sheet',rate:6.25},{item:'Screw',rate:52.5}] },
+  { label:'Steel Rotor', machine:'Assembler', mw:15, icon:'🔄', layer:'L2',
+    out:[{item:'Rotor',rate:11.25}], in:[{item:'Steel Pipe',rate:10},{item:'Wire',rate:30}] },
+],
+'Stator':[
+  { label:'Stator', machine:'Assembler', mw:15, icon:'⭕', layer:'L2',
+    out:[{item:'Stator',rate:5}], in:[{item:'Steel Pipe',rate:15},{item:'Wire',rate:40}],
+    altNote:'ALT: Quickwire Stator — 16 Steel Pipe + 60 Quickwire → 8/min (1.6×).' },
+  { label:'Quickwire Stator', machine:'Assembler', mw:15, icon:'⭕', layer:'L2',
+    out:[{item:'Stator',rate:8}], in:[{item:'Steel Pipe',rate:16},{item:'Quickwire',rate:60}] },
+],
+'Motor':[
+  { label:'Motor', machine:'Assembler', mw:15, icon:'🔁', layer:'L2',
+    out:[{item:'Motor',rate:5}], in:[{item:'Rotor',rate:10},{item:'Stator',rate:10}],
+    altNote:'ALT: Electric Motor (Assembler) — 3.75 EMCR + 7.5 Rotor → 7.5/min. Rigour Motor (Manufacturer) — 3.75 Rotor + 3.75 Stator + 1.25 Crystal Osc → 7.5/min.' },
+  { label:'Electric Motor', machine:'Assembler', mw:15, icon:'🔁', layer:'L2',
+    out:[{item:'Motor',rate:7.5}], in:[{item:'Electromagnetic Control Rod',rate:3.75},{item:'Rotor',rate:7.5}] },
+  { label:'Rigour Motor', machine:'Manufacturer', mw:55, icon:'🔁', layer:'L2',
+    out:[{item:'Motor',rate:7.5}], in:[{item:'Rotor',rate:3.75},{item:'Stator',rate:3.75},{item:'Crystal Oscillator',rate:1.25}] },
+],
+'Circuit Board':[
+  { label:'Circuit Board', machine:'Assembler', mw:15, icon:'💾', layer:'L2',
+    out:[{item:'Circuit Board',rate:7.5}], in:[{item:'Copper Sheet',rate:15},{item:'Plastic',rate:30}],
+    altNote:'ALT: Electrode CB — 30 Rubber + 8 Petroleum Coke → 5/min. Caterium CB — 12.5 Plastic + 37.5 Quickwire → 8.75/min. Silicon CB — 27.5 Cu Sheet + 27.5 Silica → 12.5/min.' },
+  { label:'Electrode Circuit Board', machine:'Assembler', mw:15, icon:'💾', layer:'L2',
+    out:[{item:'Circuit Board',rate:5}], in:[{item:'Rubber',rate:30},{item:'Petroleum Coke',rate:8}] },
+  { label:'Caterium Circuit Board', machine:'Assembler', mw:15, icon:'💾', layer:'L2',
+    out:[{item:'Circuit Board',rate:8.75}], in:[{item:'Plastic',rate:12.5},{item:'Quickwire',rate:37.5}] },
+  { label:'Silicon Circuit Board', machine:'Assembler', mw:15, icon:'💾', layer:'L2',
+    out:[{item:'Circuit Board',rate:12.5}], in:[{item:'Copper Sheet',rate:27.5},{item:'Silica',rate:27.5}] },
+],
+'AI Limiter':[
+  { label:'AI Limiter', machine:'Assembler', mw:15, icon:'🤖', layer:'L2',
+    out:[{item:'AI Limiter',rate:5}], in:[{item:'Copper Sheet',rate:25},{item:'Quickwire',rate:100}] },
+],
+'Encased Industrial Beam':[
+  { label:'Encased Industrial Beam', machine:'Assembler', mw:15, icon:'🏗', layer:'L2',
+    out:[{item:'Encased Industrial Beam',rate:6}], in:[{item:'Steel Beam',rate:24},{item:'Concrete',rate:30}],
+    altNote:'ALT: Encased Industrial Pipe — 28 Steel Pipe + 5 Concrete → 4/min.' },
+  { label:'Encased Industrial Pipe', machine:'Assembler', mw:15, icon:'🏗', layer:'L2',
+    out:[{item:'Encased Industrial Beam',rate:4}], in:[{item:'Steel Pipe',rate:28},{item:'Concrete',rate:5}] },
+],
+
+// ─── L3 ADVANCED COMPONENTS ───────────────────────────────────
+'Computer':[
+  { label:'Computer', machine:'Manufacturer', mw:55, icon:'💻', layer:'L3',
+    out:[{item:'Computer',rate:2.5}], in:[{item:'Circuit Board',rate:25},{item:'Cable',rate:22.5},{item:'Plastic',rate:45},{item:'Screw',rate:130}],
+    altNote:'ALT: Crystal Computer — 7.5 CB + 2.5 Crystal Osc → 2.5/min (much simpler). Caterium Computer — 15 CB + 52.5 Quickwire + 22.5 Rubber → 3.75/min.' },
+  { label:'Crystal Computer', machine:'Manufacturer', mw:55, icon:'💻', layer:'L3',
+    out:[{item:'Computer',rate:2.5}], in:[{item:'Circuit Board',rate:7.5},{item:'Crystal Oscillator',rate:2.5}] },
+  { label:'Caterium Computer', machine:'Manufacturer', mw:55, icon:'💻', layer:'L3',
+    out:[{item:'Computer',rate:3.75}], in:[{item:'Circuit Board',rate:15},{item:'Quickwire',rate:52.5},{item:'Rubber',rate:22.5}] },
+],
+'Crystal Oscillator':[
+  { label:'Crystal Oscillator', machine:'Manufacturer', mw:55, icon:'📡', layer:'L3',
+    out:[{item:'Crystal Oscillator',rate:2}], in:[{item:'Quartz Crystal',rate:36},{item:'Cable',rate:28},{item:'Reinforced Iron Plate',rate:5}] },
+  { label:'Insulated Crystal Oscillator', machine:'Manufacturer', mw:55, icon:'📡', layer:'L3',
+    out:[{item:'Crystal Oscillator',rate:1.875}], in:[{item:'Quartz Crystal',rate:18.75},{item:'Rubber',rate:13.125},{item:'AI Limiter',rate:1.875}] },
+],
+'Heavy Modular Frame':[
+  { label:'Heavy Modular Frame', machine:'Manufacturer', mw:55, icon:'🏗', layer:'L3',
+    out:[{item:'Heavy Modular Frame',rate:2}], in:[{item:'Modular Frame',rate:10},{item:'Steel Pipe',rate:30},{item:'Encased Industrial Beam',rate:10},{item:'Screw',rate:200}],
+    altNote:'ALT: Heavy Flexible Frame — 18.75 Mod Frame + 11.25 EIB + 75 Rubber + 390 Screws → 3.75/min. Heavy Encased Frame — 7.5 MF + 9.375 EIB + 33.75 Steel Pipe + 20.625 Concrete → 3/min.' },
+  { label:'Heavy Flexible Frame', machine:'Manufacturer', mw:55, icon:'🏗', layer:'L3',
+    out:[{item:'Heavy Modular Frame',rate:3.75}], in:[{item:'Modular Frame',rate:18.75},{item:'Encased Industrial Beam',rate:11.25},{item:'Rubber',rate:75},{item:'Screw',rate:390}] },
+  { label:'Heavy Encased Frame', machine:'Manufacturer', mw:55, icon:'🏗', layer:'L3',
+    out:[{item:'Heavy Modular Frame',rate:3}], in:[{item:'Modular Frame',rate:7.5},{item:'Encased Industrial Beam',rate:9.375},{item:'Steel Pipe',rate:33.75},{item:'Concrete',rate:20.625}] },
+],
+'High-Speed Connector':[
+  { label:'High-Speed Connector', machine:'Manufacturer', mw:55, icon:'⚡', layer:'L3',
+    out:[{item:'High-Speed Connector',rate:3.75}], in:[{item:'Quickwire',rate:210},{item:'Cable',rate:37.5},{item:'Circuit Board',rate:3.75}],
+    altNote:'ALT: Silicon HSC — 90 Quickwire + 37.5 Silica + 3 CB → 3/min. Swaps cable for silica.' },
+  { label:'Silicon High-Speed Connector', machine:'Manufacturer', mw:55, icon:'⚡', layer:'L3',
+    out:[{item:'High-Speed Connector',rate:3}], in:[{item:'Quickwire',rate:90},{item:'Silica',rate:37.5},{item:'Circuit Board',rate:3}] },
+],
+'Supercomputer':[
+  { label:'Supercomputer', machine:'Manufacturer', mw:55, icon:'🖥', layer:'L3',
+    out:[{item:'Supercomputer',rate:1.875}], in:[{item:'Computer',rate:3.75},{item:'AI Limiter',rate:3.75},{item:'High-Speed Connector',rate:5.625},{item:'Plastic',rate:52.5}],
+    altNote:'ALT: OC Supercomputer — 7.5 RCU + 3.75 Cooling System → 1.875/min. Super-State Computer — 3.6 Computer + 2.4 EMCR + 24 Battery + 54 Wire → 2.4/min.' },
+  { label:'OC Supercomputer', machine:'Manufacturer', mw:55, icon:'🖥', layer:'L3',
+    out:[{item:'Supercomputer',rate:1.875}], in:[{item:'Radio Control Unit',rate:7.5},{item:'Cooling System',rate:3.75}] },
+  { label:'Super-State Computer', machine:'Manufacturer', mw:55, icon:'🖥', layer:'L3',
+    out:[{item:'Supercomputer',rate:2.4}], in:[{item:'Computer',rate:3.6},{item:'Electromagnetic Control Rod',rate:2.4},{item:'Battery',rate:24},{item:'Wire',rate:54}] },
+],
+'Radio Control Unit':[
+  { label:'Radio Control Unit', machine:'Manufacturer', mw:55, icon:'📻', layer:'L3',
+    out:[{item:'Radio Control Unit',rate:2.5}], in:[{item:'Aluminum Casing',rate:40},{item:'Crystal Oscillator',rate:1.25},{item:'Computer',rate:1.25}],
+    altNote:'ALT: Radio Connection Unit — 37.5 Heat Sink + 52.5 HSC + 2.5 Crystal Osc → 7.5/min (3× output — one of the best alts in the game).' },
+  { label:'Radio Connection Unit', machine:'Manufacturer', mw:55, icon:'📻', layer:'L3',
+    out:[{item:'Radio Control Unit',rate:7.5}], in:[{item:'Heat Sink',rate:37.5},{item:'High-Speed Connector',rate:52.5},{item:'Crystal Oscillator',rate:2.5}] },
+],
+'Heat Sink':[
+  { label:'Heat Sink', machine:'Assembler', mw:15, icon:'🌡', layer:'L3',
+    out:[{item:'Heat Sink',rate:7.5}], in:[{item:'Alclad Aluminum Sheet',rate:37.5},{item:'Copper Sheet',rate:22.5}],
+    altNote:'ALT: Heat Exchanger — 30 Alclad + 6 Rubber → 10/min. Saves copper.' },
+  { label:'Heat Exchanger', machine:'Assembler', mw:15, icon:'🌡', layer:'L3',
+    out:[{item:'Heat Sink',rate:10}], in:[{item:'Alclad Aluminum Sheet',rate:30},{item:'Rubber',rate:6}] },
+],
+'Electromagnetic Control Rod':[
+  { label:'Electromagnetic Control Rod', machine:'Assembler', mw:15, icon:'⚡', layer:'L3',
+    out:[{item:'Electromagnetic Control Rod',rate:4}], in:[{item:'Stator',rate:6},{item:'AI Limiter',rate:4}],
+    altNote:'ALT: EM Connection Rod — 8 Stator + 4 HSC → 8/min (2× output).' },
+  { label:'EM Connection Rod', machine:'Assembler', mw:15, icon:'⚡', layer:'L3',
+    out:[{item:'Electromagnetic Control Rod',rate:8}], in:[{item:'Stator',rate:8},{item:'High-Speed Connector',rate:4}] },
+],
+'Cooling System':[
+  { label:'Cooling System', machine:'Blender', mw:75, icon:'❄', layer:'L3',
+    out:[{item:'Cooling System',rate:6}], in:[{item:'Heat Sink',rate:12},{item:'Rubber',rate:12},{item:'Water',rate:30},{item:'Nitrogen Gas',rate:150}],
+    altNote:'ALT: Cooling Device — 9.375 Heat Sink + 2.3125 Motor + 9.375 Nitrogen Gas → 3.75/min. Removes water/rubber.' },
+  { label:'Cooling Device', machine:'Blender', mw:75, icon:'❄', layer:'L3',
+    out:[{item:'Cooling System',rate:3.75}], in:[{item:'Heat Sink',rate:9.375},{item:'Motor',rate:2.3125},{item:'Nitrogen Gas',rate:9.375}] },
+],
+'Fused Modular Frame':[
+  { label:'Fused Modular Frame', machine:'Blender', mw:75, icon:'🛸', layer:'L3',
+    out:[{item:'Fused Modular Frame',rate:1.5}], in:[{item:'Heavy Modular Frame',rate:1.5},{item:'Aluminum Casing',rate:75},{item:'Nitrogen Gas',rate:37.5}] },
+  { label:'Heat-Fused Frame', machine:'Blender', mw:75, icon:'🛸', layer:'L3',
+    out:[{item:'Fused Modular Frame',rate:3}], in:[{item:'Heavy Modular Frame',rate:3},{item:'Aluminum Ingot',rate:150},{item:'Nitric Acid',rate:24},{item:'Fuel',rate:30}] },
+],
+'Battery':[
+  { label:'Battery', machine:'Blender', mw:75, icon:'🔋', layer:'L3',
+    out:[{item:'Battery',rate:1},{item:'Water',rate:1.5}], in:[{item:'Sulfuric Acid',rate:2.5},{item:'Alumina Solution',rate:2},{item:'Aluminum Casing',rate:1}],
+    altNote:'ALT: Classic Battery (Manufacturer) — 22.5 Sulfur + 22.5 Alclad Sheet + 7.5 Plastic + 5 Wire → 7.5/min. No liquids, much simpler logistics.' },
+  { label:'Classic Battery', machine:'Manufacturer', mw:55, icon:'🔋', layer:'L3',
+    out:[{item:'Battery',rate:7.5}], in:[{item:'Sulfur',rate:22.5},{item:'Alclad Aluminum Sheet',rate:22.5},{item:'Plastic',rate:7.5},{item:'Wire',rate:5}] },
+],
+'Sulfuric Acid':[
+  { label:'Sulfuric Acid', machine:'Refinery', mw:30, icon:'🧪', layer:'L3',
+    out:[{item:'Sulfuric Acid',rate:50}], in:[{item:'Sulfur',rate:50},{item:'Water',rate:50}] },
+],
+'Nitric Acid':[
+  { label:'Nitric Acid', machine:'Blender', mw:75, icon:'🧪', layer:'L3',
+    out:[{item:'Nitric Acid',rate:3}], in:[{item:'Nitrogen Gas',rate:12},{item:'Water',rate:3},{item:'Iron Plate',rate:1}] },
+],
+
+// ─── L4 PHASE 3-4 PARTS ───────────────────────────────────────
+'Smart Plating':[
+  { label:'Smart Plating', machine:'Assembler', mw:15, icon:'📋', layer:'L4',
+    out:[{item:'Smart Plating',rate:2}], in:[{item:'Reinforced Iron Plate',rate:2},{item:'Rotor',rate:2}],
+    altNote:'ALT: Plastic Smart Plating (Manufacturer) — 2.5 RIP + 2.5 Rotor + 7.5 Plastic → 5/min.' },
+  { label:'Plastic Smart Plating', machine:'Manufacturer', mw:55, icon:'📋', layer:'L4',
+    out:[{item:'Smart Plating',rate:5}], in:[{item:'Reinforced Iron Plate',rate:2.5},{item:'Rotor',rate:2.5},{item:'Plastic',rate:7.5}] },
+],
+'Versatile Framework':[
+  { label:'Versatile Framework', machine:'Assembler', mw:15, icon:'🏛', layer:'L4',
+    out:[{item:'Versatile Framework',rate:5}], in:[{item:'Modular Frame',rate:2.5},{item:'Steel Beam',rate:30}],
+    altNote:'ALT: Flexible Framework — 3.75 Mod Frame + 22.5 Steel Beam + 30 Rubber → 7.5/min.' },
+  { label:'Flexible Framework', machine:'Manufacturer', mw:55, icon:'🏛', layer:'L4',
+    out:[{item:'Versatile Framework',rate:7.5}], in:[{item:'Modular Frame',rate:3.75},{item:'Steel Beam',rate:22.5},{item:'Rubber',rate:30}] },
+],
+'Automated Wiring':[
+  { label:'Automated Wiring', machine:'Assembler', mw:15, icon:'🔌', layer:'L4',
+    out:[{item:'Automated Wiring',rate:2.5}], in:[{item:'Stator',rate:2.5},{item:'Cable',rate:50}],
+    altNote:'ALT: Automated Speed Wiring (Manufacturer) — 3.75 Stator + 75 Wire + 1.875 HSC → 7.5/min (3×).' },
+  { label:'Automated Speed Wiring', machine:'Manufacturer', mw:55, icon:'🔌', layer:'L4',
+    out:[{item:'Automated Wiring',rate:7.5}], in:[{item:'Stator',rate:3.75},{item:'Wire',rate:75},{item:'High-Speed Connector',rate:1.875}] },
+],
+'Modular Engine':[
+  { label:'Modular Engine', machine:'Manufacturer', mw:55, icon:'🚀', layer:'L4',
+    out:[{item:'Modular Engine',rate:1}], in:[{item:'Motor',rate:2},{item:'Rubber',rate:15},{item:'Smart Plating',rate:2}] },
+],
+'Adaptive Control Unit':[
+  { label:'Adaptive Control Unit', machine:'Manufacturer', mw:55, icon:'🕹', layer:'L4',
+    out:[{item:'Adaptive Control Unit',rate:1}], in:[{item:'Automated Wiring',rate:7.5},{item:'Circuit Board',rate:5},{item:'Heavy Modular Frame',rate:1},{item:'Computer',rate:1}] },
+],
+'Magnetic Field Generator':[
+  { label:'Magnetic Field Generator', machine:'Manufacturer', mw:55, icon:'🧲', layer:'L4',
+    out:[{item:'Magnetic Field Generator',rate:1}], in:[{item:'Versatile Framework',rate:2.5},{item:'Electromagnetic Control Rod',rate:1},{item:'Battery',rate:5}] },
+],
+'Turbo Motor':[
+  { label:'Turbo Motor', machine:'Manufacturer', mw:55, icon:'🌀', layer:'L4',
+    out:[{item:'Turbo Motor',rate:1.875}], in:[{item:'Cooling System',rate:7.5},{item:'Radio Control Unit',rate:3.75},{item:'Motor',rate:7.5},{item:'Rubber',rate:45}],
+    altNote:'ALT: Turbo Electric Motor — 6.5625 Motor + 8.4375 RCU + 4.6875 EMCR + 6.5625 Rotor → 2.8125/min.' },
+  { label:'Turbo Electric Motor', machine:'Manufacturer', mw:55, icon:'🌀', layer:'L4',
+    out:[{item:'Turbo Motor',rate:2.8125}], in:[{item:'Motor',rate:6.5625},{item:'Radio Control Unit',rate:8.4375},{item:'Electromagnetic Control Rod',rate:4.6875},{item:'Rotor',rate:6.5625}] },
+],
+'Assembly Director System':[
+  { label:'Assembly Director System', machine:'Assembler', mw:15, icon:'🎮', layer:'L4',
+    out:[{item:'Assembly Director System',rate:0.75}], in:[{item:'Adaptive Control Unit',rate:1.5},{item:'Supercomputer',rate:0.75}] },
+],
+'Thermal Propulsion Rocket':[
+  { label:'Thermal Propulsion Rocket', machine:'Manufacturer', mw:55, icon:'🚀', layer:'L4',
+    out:[{item:'Thermal Propulsion Rocket',rate:1}], in:[{item:'Modular Engine',rate:2.5},{item:'Turbo Motor',rate:1},{item:'Cooling System',rate:1},{item:'Fused Modular Frame',rate:1}] },
+],
+
+// ─── L5 PHASE 5 ───────────────────────────────────────────────
+'Reanimated SAM':[
+  { label:'Reanimated SAM', machine:'Converter', mw:50, icon:'🔮', layer:'L5',
+    out:[{item:'Reanimated SAM',rate:60}], in:[{item:'SAM',rate:120},{item:'Copper Ingot',rate:60}], tags:['key'] },
+],
+'Dark Matter Residue':[
+  { label:'Dark Matter Residue', machine:'Particle Accelerator', mw:1500, icon:'🌑', layer:'L5',
+    out:[{item:'Dark Matter Residue',rate:200}], in:[{item:'Reanimated SAM',rate:200}], tags:['key'] },
+],
+'Dark Matter Crystal':[
+  { label:'Dark Matter Crystal', machine:'Particle Accelerator', mw:1500, icon:'💎', layer:'L5',
+    out:[{item:'Dark Matter Crystal',rate:30}], in:[{item:'Coal',rate:600},{item:'Dark Matter Residue',rate:300}],
+    altNote:'ALT: Dark Matter Crystallization — 200 Dark Matter Residue → 4 DMC. No coal needed.' },
+  { label:'Dark Matter Crystallization', machine:'Particle Accelerator', mw:1500, icon:'💎', layer:'L5',
+    out:[{item:'Dark Matter Crystal',rate:4}], in:[{item:'Dark Matter Residue',rate:200}] },
+],
+'Excited Photonic Matter':[
+  { label:'Excited Photonic Matter', machine:'Converter', mw:50, icon:'✨', layer:'L5',
+    out:[{item:'Excited Photonic Matter',rate:200}], in:[], tags:['key'],
+    altNote:'Free output from Converters — no inputs required. Rate = number of Converters × 200/min.' },
+],
+'Ficsite Trigon':[
+  { label:'Ficsite Trigon', machine:'Converter', mw:50, icon:'🔺', layer:'L5',
+    out:[{item:'Ficsite Trigon',rate:60}], in:[{item:'Reanimated SAM',rate:30}] },
+],
+'Ficsite Ingot':[
+  { label:'Ficsite Ingot (Iron)', machine:'Converter', mw:50, icon:'🔶', layer:'L5',
+    out:[{item:'Ficsite Ingot',rate:6}], in:[{item:'Ficsite Trigon',rate:24},{item:'Iron Ingot',rate:60}],
+    altNote:'ALT: Ficsite Ingot (Caterium) — 12 Trigon + 30 Cat Ingot → 6/min. Ficsite Ingot (Aluminum) — 4 Trigon + 60 Al Ingot → 6/min. Same output, different metal inputs.' },
+  { label:'Ficsite Ingot (Caterium)', machine:'Converter', mw:50, icon:'🔶', layer:'L5',
+    out:[{item:'Ficsite Ingot',rate:6}], in:[{item:'Ficsite Trigon',rate:12},{item:'Caterium Ingot',rate:30}] },
+  { label:'Ficsite Ingot (Aluminum)', machine:'Converter', mw:50, icon:'🔶', layer:'L5',
+    out:[{item:'Ficsite Ingot',rate:6}], in:[{item:'Ficsite Trigon',rate:4},{item:'Aluminum Ingot',rate:60}] },
+],
+'Superposition Oscillator':[
+  { label:'Superposition Oscillator', machine:'Quantum Encoder', mw:1000, icon:'🌀', layer:'L5',
+    out:[{item:'Superposition Oscillator',rate:5},{item:'Dark Matter Residue',rate:125}],
+    in:[{item:'Dark Matter Crystal',rate:30},{item:'Crystal Oscillator',rate:5},{item:'Alclad Aluminum Sheet',rate:45},{item:'Excited Photonic Matter',rate:125}],
+    loopNote:'DMR output loops back to reduce upstream PA demand by ~15% when fully plumbed.', tags:['loop'] },
+],
+'Neural-Quantum Processor':[
+  { label:'Neural-Quantum Processor', machine:'Quantum Encoder', mw:1000, icon:'🧠', layer:'L5',
+    out:[{item:'Neural-Quantum Processor',rate:3},{item:'Dark Matter Residue',rate:75}],
+    in:[{item:'Supercomputer',rate:7.5},{item:'Fused Modular Frame',rate:0.75},{item:'Dark Matter Crystal',rate:15},{item:'Excited Photonic Matter',rate:100}],
+    loopNote:'DMR output loops back.', tags:['loop','key'] },
+],
+'AI Expansion Server':[
+  { label:'AI Expansion Server', machine:'Quantum Encoder', mw:1000, icon:'🖥', layer:'L5',
+    out:[{item:'AI Expansion Server',rate:1.5},{item:'Dark Matter Residue',rate:62.5}],
+    in:[{item:'Neural-Quantum Processor',rate:3},{item:'Magnetic Field Generator',rate:1.5},{item:'Superposition Oscillator',rate:1.5},{item:'Excited Photonic Matter',rate:62.5}],
+    loopNote:'DMR output loops back.', tags:['loop','key'] },
+],
+'Biochemical Sculptor':[
+  { label:'Biochemical Sculptor', machine:'Quantum Encoder', mw:1000, icon:'🧬', layer:'L5',
+    out:[{item:'Biochemical Sculptor',rate:0.75},{item:'Dark Matter Residue',rate:62.5}],
+    in:[{item:'Assembly Director System',rate:0.75},{item:'Ficsite Trigon',rate:3.75},{item:'Water',rate:37.5},{item:'Excited Photonic Matter',rate:62.5}],
+    loopNote:'DMR output loops back.', tags:['loop'] },
+],
+
+}; // end RECIPE_DB
+
+// ── MACHINE POWER (MW at 100% clock speed)
+const MACHINE_POWER = {
+  'Smelter':4,'Foundry':16,'Constructor':4,'Assembler':15,
+  'Manufacturer':55,'Refinery':30,'Blender':75,'Packager':10,
+  'Particle Accelerator':1500,'Quantum Encoder':1000,'Converter':50,
+};
+
+// ── MILESTONES
+const MILESTONES = [
+  { id:'p1',  label:'Phase 1', sub:'Tier 0–2', color:'#78b055',
+    targets:[{item:'Smart Plating',rate:10},{item:'Versatile Framework',rate:10},{item:'Automated Wiring',rate:10}] },
+  { id:'p2',  label:'Phase 2', sub:'Tier 3–4', color:'#5296e0',
+    targets:[{item:'Modular Frame',rate:10},{item:'Stator',rate:10},{item:'Rotor',rate:10},{item:'Motor',rate:5}] },
+  { id:'p3',  label:'Phase 3', sub:'Tier 5–7', color:'#f5a623',
+    targets:[{item:'Versatile Framework',rate:5},{item:'Modular Engine',rate:10},{item:'Adaptive Control Unit',rate:5}] },
+  { id:'p4',  label:'Phase 4', sub:'Tier 7–8', color:'#4ecdc4',
+    targets:[{item:'Assembly Director System',rate:2},{item:'Magnetic Field Generator',rate:2},{item:'Thermal Propulsion Rocket',rate:2},{item:'Turbo Motor',rate:5}] },
+  { id:'p5c', label:'Phase 5 Core', sub:'NQP + AES', color:'#e05252',
+    targets:[{item:'Neural-Quantum Processor',rate:3},{item:'AI Expansion Server',rate:1.5},{item:'Superposition Oscillator',rate:5}] },
+  { id:'p5f', label:'Phase 5 Full', sub:'All P5 Parts', color:'#b06cff',
+    targets:[{item:'Neural-Quantum Processor',rate:6},{item:'AI Expansion Server',rate:3},{item:'Superposition Oscillator',rate:10},{item:'Biochemical Sculptor',rate:1.5}] },
+];
+
+// ── LAYER METADATA
+const LAYERS = {
+  L1:  { label:'Basic Materials',      color:'#78b055', ord:0 },
+  Oil: { label:'Oil Chain',            color:'#e8941a', ord:1 },
+  Al:  { label:'Aluminium Chain',      color:'#bdc3c7', ord:2 },
+  L2:  { label:'Components',           color:'#5296e0', ord:3 },
+  L3:  { label:'Advanced Components',  color:'#f5a623', ord:4 },
+  L4:  { label:'Phase 3–4 Parts',      color:'#4ecdc4', ord:5 },
+  L5:  { label:'Phase 5',              color:'#e05252', ord:6 },
+};
+const LAYER_ORDER = Object.keys(LAYERS);
+
+// ── TRANSPORT DATA for Train tab
+const BELT_SPEEDS = [
+  { mk:'Mk.1', rate:60 },{ mk:'Mk.2', rate:120 },{ mk:'Mk.3', rate:270 },
+  { mk:'Mk.4', rate:480 },{ mk:'Mk.5', rate:780 },{ mk:'Mk.6', rate:1200 },
+];
+const PIPE_SPEEDS = [
+  { mk:'Mk.1', rate:300 },{ mk:'Mk.2', rate:600 },
+];
+// Train freight car capacities (items per car, vanilla)
+const CAR_CAPS = {
+  solid:  { cap:32, unit:'stacks' },  // freight car: 32 stacks, stack size varies
+  fluid:  { cap:3200, unit:'m³' },    // fluid freight car: 3200 units
+  // Approximate item-per-minute capacity at given frequency
+};
+// Common items and their stack sizes
+const STACK_SIZE = {
+  default: 100,
+  'Iron Ore':100,'Copper Ore':100,'Coal':100,'Limestone':100,'Bauxite':100,
+  'Raw Quartz':100,'Caterium Ore':100,'Sulfur':100,'Uranium':100,
+  'Iron Ingot':100,'Copper Ingot':100,'Caterium Ingot':100,'Steel Ingot':100,'Aluminum Ingot':100,
+  'Iron Plate':100,'Iron Rod':100,'Wire':100,'Cable':100,'Quickwire':100,
+  'Copper Sheet':100,'Screw':200,'Steel Beam':100,'Steel Pipe':100,'Concrete':100,
+  'Silica':100,'Quartz Crystal':100,'Plastic':100,'Rubber':100,
+  'Reinforced Iron Plate':100,'Modular Frame':50,'Rotor':100,'Stator':50,
+  'Motor':50,'Circuit Board':100,'AI Limiter':100,'Encased Industrial Beam':100,
+  'Computer':50,'Crystal Oscillator':50,'Heavy Modular Frame':50,
+  'High-Speed Connector':50,'Supercomputer':50,'Radio Control Unit':50,
+  'Heat Sink':100,'Electromagnetic Control Rod':50,'Cooling System':50,
+  'Fused Modular Frame':50,'Battery':50,'Aluminum Casing':100,'Alclad Aluminum Sheet':100,
+  'Aluminum Scrap':100,
+  'Smart Plating':50,'Versatile Framework':50,'Automated Wiring':50,
+  'Modular Engine':50,'Adaptive Control Unit':50,'Magnetic Field Generator':50,
+  'Turbo Motor':50,'Assembly Director System':50,'Thermal Propulsion Rocket':50,
+  'Reanimated SAM':100,'Dark Matter Crystal':100,'Ficsite Trigon':100,
+  'Ficsite Ingot':100,'Superposition Oscillator':50,'Neural-Quantum Processor':50,
+  'AI Expansion Server':50,'Biochemical Sculptor':50,
+};
+
+// ── GENERATOR DATA for Power tab
+const GENERATORS = [
+  { id:'bio',   name:'Biomass Burner',      mw:30,    fuel:'Biomass / Solid Biofuel', color:'#78b055' },
+  { id:'coal',  name:'Coal Generator',      mw:75,    fuel:'Coal / Compacted Coal / Petroleum Coke', color:'#95a5a6' },
+  { id:'fuel',  name:'Fuel Generator',      mw:150,   fuel:'Fuel / Liquid Biofuel / Turbofuel', color:'#e8941a' },
+  { id:'geo',   name:'Geothermal Generator',mw:100,   fuel:'Free (geyser)', color:'#2ecc71' },
+  { id:'nuclear',name:'Nuclear Power Plant',mw:2500,  fuel:'Uranium / Plutonium Fuel Rods', color:'#2ecc71' },
+  { id:'alien', name:'Alien Power Augmenter',mw:500,  fuel:'SAM (Ficsite Trigon)', color:'#b06cff' },
+];
+
+// ══════════════════════════════════════════════════════════════
+//  DERIVED / HELPERS
+// ══════════════════════════════════════════════════════════════
+const PRODUCIBLE = Object.keys(RECIPE_DB).sort();
+
+function fmt(n,d=2){ if(!n&&n!==0) return '—'; if(n===0) return '0'; return parseFloat(n.toFixed(d)).toString(); }
+function isRaw(item){ return !!RAWS[item]; }
+
+function getActiveRecipe(item){
+  const vs=RECIPE_DB[item]; if(!vs) return null;
+  return vs[Math.min(PS.altSelections[item]||0, vs.length-1)];
+}
+
+function mpillClass(m){
+  return {Smelter:'mp-sm',Foundry:'mp-fo',Constructor:'mp-co',Assembler:'mp-as',
+    Manufacturer:'mp-ma',Refinery:'mp-re',Blender:'mp-bl',
+    'Particle Accelerator':'mp-pa','Quantum Encoder':'mp-qe',Converter:'mp-cv'}[m]||'mp-ot';
+}
+
+function activeAltCount(){ return Object.values(PS.altSelections).filter(v=>v>0).length; }
+
+function updateAltBadge(){
+  const n=activeAltCount();
+  const b=document.getElementById('altBadge');
+  b.textContent=n>0?`${n} ALT${n>1?'S':''} ACTIVE`:'0 ALTS';
+  b.style.color=n>0?'var(--purple)':'var(--text3)';
+  b.style.borderColor=n>0?'rgba(176,108,255,.5)':'rgba(61,90,112,.4)';
+  b.style.background=n>0?'rgba(176,108,255,.08)':'transparent';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PLANNER STATE (independent per tab)
+// ══════════════════════════════════════════════════════════════
+// PS = Planner State, RS = Reference State, TS = Train State, WS = poWer State
+const PS = {
+  targets:[], activeMilestone:null, altSelections:{},
+  machineMode:'both', groupBy:'layer', showClock:'yes', showPower:'yes',
+  lastResult:null, chainItems:[],
+};
+const RS = { search:'', layerFilter:'all', machineFilter:'all', altOnly:false, scale:1, expanded:new Set() };
+const TS = { itemRates:[], trainFreqMin:2, carsPerTrain:3, trackType:'solid' };
+const WS = { loads:[], targetMW:0 };
+
+// ══════════════════════════════════════════════════════════════
+//  RESOLVER
+// ══════════════════════════════════════════════════════════════
+function resolve(targets){
+  const needed={};
+  const vis1=new Set();
+  function req1(item,rate){
+    if(!needed[item])needed[item]=0; needed[item]+=rate;
+    if(vis1.has(item)) return; vis1.add(item);
+    if(isRaw(item)) return;
+    const r=getActiveRecipe(item); if(!r) return;
+    const po=r.out.find(o=>o.item===item); if(!po) return;
+    r.in.forEach(i=>req1(i.item, i.rate*(rate/po.rate)));
+  }
+  targets.forEach(t=>req1(t.item,t.rate));
+
+  const needed2={};
+  const vis2=new Set();
+  function req2(item,rate){
+    if(!needed2[item])needed2[item]=0; needed2[item]+=rate;
+    if(vis2.has(item)) return; vis2.add(item);
+    if(isRaw(item)) return;
+    const r=getActiveRecipe(item); if(!r) return;
+    const po=r.out.find(o=>o.item===item); if(!po) return;
+    const totalNeeded=needed[item]||rate; // fallback to current rate if not in pass1
+    const m=totalNeeded/po.rate;
+    r.in.forEach(i=>req2(i.item,i.rate*m));
+  }
+  targets.forEach(t=>req2(t.item,t.rate));
+
+  const machines={}, raws={};
+  Object.entries(needed2).forEach(([item,totalRate])=>{
+    if(isRaw(item)){raws[item]=(raws[item]||0)+totalRate; return;}
+    const r=getActiveRecipe(item); if(!r) return;
+    const po=r.out.find(o=>o.item===item); if(!po) return;
+    const exact=totalRate/po.rate;
+    const isAlt=(PS.altSelections[item]||0)>0;
+    machines[item]={exact,ceilInt:Math.ceil(exact),recipe:r,layer:r.layer||'L?',totalRate,isAlt,altLabel:isAlt?r.label:null};
+  });
+  return {machines,raws,chainItems:Object.keys(needed2)};
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TAB SYSTEM
+// ══════════════════════════════════════════════════════════════
+let activeTab='planner';
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    activeTab=btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b===btn));
+    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id===`pane-${activeTab}`));
+    renderLeftPanel();
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+//  LEFT PANEL ROUTER
+// ══════════════════════════════════════════════════════════════
+function renderLeftPanel(){
+  const lp=document.getElementById('leftPanel');
+  lp.innerHTML='';
+  if(activeTab==='planner')   buildPlannerLeft(lp);
+  if(activeTab==='reference') buildReferenceLeft(lp);
+  if(activeTab==='train')     buildTrainLeft(lp);
+  if(activeTab==='power')     buildPowerLeft(lp);
+}
+
+// ── helpers to build left panel sections
+function ps_sec(lp,labelText){ const d=document.createElement('div'); d.className='ps'; lp.appendChild(d); const l=document.createElement('div'); l.className='slabel'; l.textContent=labelText; d.appendChild(l); return d; }
+function ps_tg(parent,key,opts,stateObj){
+  const w=document.createElement('div'); w.className='tg';
+  opts.forEach(([val,lbl])=>{
+    const b=document.createElement('button'); b.className='tgo'+(stateObj[key]===val?' on':'');
+    b.textContent=lbl; b.addEventListener('click',()=>{ stateObj[key]=val; w.querySelectorAll('.tgo').forEach(x=>x.classList.toggle('on',x===b)); if(activeTab==='planner'&&PS.lastResult) renderPlannerRight(); if(activeTab==='reference') renderReference(); });
+    w.appendChild(b);
+  });
+  parent.appendChild(w);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PLANNER LEFT PANEL
+// ══════════════════════════════════════════════════════════════
+function buildPlannerLeft(lp){
+  lp.innerHTML=''; // always clear before rebuilding
+  // Milestones
+  const ms=ps_sec(lp,'Milestone Presets');
+  const mg=document.createElement('div'); mg.className='mg'; ms.appendChild(mg);
+  MILESTONES.forEach(m=>{
+    const b=document.createElement('button'); b.className='mbtn'+(PS.activeMilestone===m.id?' on':'');
+    b.style.setProperty('--mc',m.color); b.dataset.mid=m.id;
+    b.innerHTML=`<div class="mbtn-t">${m.label}</div><div class="mbtn-s">${m.sub}</div>`;
+    b.addEventListener('click',()=>{
+      if(PS.activeMilestone===m.id){PS.activeMilestone=null;PS.targets=[];}
+      else{PS.activeMilestone=m.id;PS.targets=[...m.targets];}
+      buildPlannerLeft(lp);
+    });
+    mg.appendChild(b);
+  });
+
+  // Custom targets
+  const ct=ps_sec(lp,'Custom Targets');
+  const row=document.createElement('div'); row.className='row'; ct.appendChild(row);
+  const sel=document.createElement('select'); sel.className='fi'; sel.style.flex='1';
+  PRODUCIBLE.forEach(item=>{const o=document.createElement('option');o.value=item;o.textContent=item;sel.appendChild(o);});
+  const qty=document.createElement('input'); qty.type='number'; qty.className='fi fi-w60'; qty.value='1'; qty.min='0.1'; qty.step='0.5';
+  const ab=document.createElement('button'); ab.className='btn btn-add'; ab.textContent='+ADD';
+  ab.addEventListener('click',()=>{
+    const item=sel.value; const rate=parseFloat(qty.value);
+    if(!item||isNaN(rate)||rate<=0) return;
+    const ex=PS.targets.find(t=>t.item===item);
+    if(ex)ex.rate+=rate; else PS.targets.push({item,rate});
+    PS.activeMilestone=null;
+    buildPlannerLeft(lp);
+  });
+  qty.addEventListener('keydown',e=>{if(e.key==='Enter')ab.click();});
+  row.appendChild(sel); row.appendChild(qty); row.appendChild(ab);
+
+  const tlist=document.createElement('div'); tlist.className='tlist'; ct.appendChild(tlist);
+  PS.targets.forEach((t,i)=>{
+    const el=document.createElement('div'); el.className='titem';
+    const ico=RECIPE_DB[t.item]?.[0]?.icon||'📦';
+    el.innerHTML=`<span class="ti-n">${ico} ${t.item}</span><span class="ti-r">${fmt(t.rate,2)}</span><span class="ti-u">/min</span>`;
+    const rm=document.createElement('button'); rm.className='ti-x'; rm.textContent='×';
+    rm.addEventListener('click',()=>{PS.targets.splice(i,1);PS.activeMilestone=null;buildPlannerLeft(lp);});
+    el.appendChild(rm); tlist.appendChild(el);
+  });
+
+  // Alt recipes (only if chain has been calculated)
+  const altSec=ps_sec(lp,'Alt Recipes');
+  altSec.id='altPanelSection';
+  buildAltPanel(altSec);
+
+  // Settings
+  const stSec=ps_sec(lp,'Display Settings');
+  const sg=document.createElement('div'); sg.className='col'; stSec.appendChild(sg);
+  const rows=[
+    ['MACHINES',  'machineMode', [['both','BOTH'],['exact','EXACT'],['ceil','CEIL']]],
+    ['GROUP BY',  'groupBy',     [['layer','LAYER'],['machine','TYPE'],['flat','FLAT']]],
+    ['CLOCK %',   'showClock',   [['yes','SHOW'],['no','HIDE']]],
+    ['POWER',     'showPower',   [['yes','SHOW'],['no','HIDE']]],
+  ];
+  rows.forEach(([lbl,key,opts])=>{
+    const r=document.createElement('div'); r.className='srow';
+    const l=document.createElement('span'); l.className='slbl'; l.textContent=lbl;
+    r.appendChild(l); ps_tg(r,key,opts,PS); sg.appendChild(r);
+  });
+
+  // Action buttons
+  const calc=document.createElement('button'); calc.className='btn-go'; calc.textContent='▶ CALCULATE';
+  calc.addEventListener('click',renderPlannerRight); stSec.appendChild(calc);
+  const clr=document.createElement('button'); clr.className='btn btn-ghost btn-w'; clr.textContent='✕ CLEAR RESULTS';
+  clr.addEventListener('click',()=>{PS.lastResult=null;showWaiting('pane-planner','⚙','Awaiting Targets','Select a milestone or add custom targets, then hit CALCULATE.');});
+  stSec.appendChild(clr);
+  const rst=document.createElement('button'); rst.className='btn btn-danger btn-w'; rst.style.marginTop='4px'; rst.textContent='⟳ RESET EVERYTHING';
+  rst.addEventListener('click',()=>{
+    PS.targets=[];PS.activeMilestone=null;PS.altSelections={};PS.lastResult=null;PS.chainItems=[];
+    updateAltBadge(); buildPlannerLeft(lp);
+    showWaiting('pane-planner','⚙','Awaiting Targets','Select a milestone or add custom targets, then hit CALCULATE.');
+  });
+  stSec.appendChild(rst);
+}
+
+function buildAltPanel(container){
+  const altItems=PS.chainItems.filter(item=>{ const v=RECIPE_DB[item]; return v&&v.length>1; }).sort();
+  if(altItems.length===0){
+    const d=document.createElement('div'); d.style.cssText='font-family:var(--mono);font-size:9px;color:var(--text3);padding:6px 0;text-align:center;letter-spacing:1px;';
+    d.textContent='Run CALCULATE to see alts for your chain.'; container.appendChild(d); return;
+  }
+  const badge=document.createElement('div');
+  badge.style.cssText='font-family:var(--mono);font-size:8px;padding:2px 7px;background:rgba(176,108,255,.1);border:1px solid rgba(176,108,255,.35);color:var(--purple);letter-spacing:1px;display:inline-block;margin-bottom:5px;';
+  badge.textContent=`${altItems.length} WITH ALTS · ${activeAltCount()} ACTIVE`;
+  container.appendChild(badge);
+
+  altItems.forEach(item=>{
+    const vs=RECIPE_DB[item]; const ai=PS.altSelections[item]||0; const av=vs[ai];
+    const isAlt=ai>0;
+    const el=document.createElement('div'); el.className='aitem'; el.dataset.item=item;
+    const hdr=document.createElement('div'); hdr.className='aitem-hdr';
+    hdr.innerHTML=`<span class="ai-nm">${vs[0].icon||'⚙'} ${item}</span>
+      <span class="${isAlt?'ai-ba':'ai-bv'}">${isAlt?'◆ '+av.label:'VANILLA'}</span>
+      <span class="ai-chv">▼</span>`;
+    hdr.addEventListener('click',()=>el.classList.toggle('open'));
+    el.appendChild(hdr);
+
+    const opts=document.createElement('div'); opts.className='aopts';
+    vs.forEach((v,idx)=>{
+      const sel=idx===ai;
+      const inStr=v.in.length>0?v.in.map(i=>`<span class="inp">${fmt(i.rate,2)} ${i.item}</span>`).join(' + '):'<span style="color:var(--text3)">no inputs</span>';
+      const outStr=v.out.map(o=>`<span class="out">${fmt(o.rate,2)} ${o.item}</span>`).join(' + ');
+      const opt=document.createElement('div'); opt.className='aopt'+(sel?' sel':'');
+      opt.innerHTML=`<div class="aopt-rd"><div class="aopt-dot"></div></div>
+        <div class="aopt-body">
+          <div class="aopt-lbl">${idx===0?'▸ VANILLA — ':''}${v.label}</div>
+          <div class="aopt-mc">${v.machine} · ${v.mw}MW</div>
+          <div class="aopt-io">${inStr} → ${outStr}</div>
+        </div>`;
+      opt.addEventListener('click',()=>{
+        if(idx===0) delete PS.altSelections[item]; else PS.altSelections[item]=idx;
+        updateAltBadge();
+        if(PS.lastResult) renderPlannerRight();
+        buildPlannerLeft(document.getElementById('leftPanel'));
+      });
+      opts.appendChild(opt);
+    });
+    el.appendChild(opts); container.appendChild(el);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PLANNER RIGHT PANEL
+// ══════════════════════════════════════════════════════════════
+function renderPlannerRight(){
+  const pane=document.getElementById('pane-planner');
+  if(PS.targets.length===0){showWaiting('pane-planner','⚙','Awaiting Targets','Select a milestone or add custom targets, then hit CALCULATE.'); return;}
+
+  const {machines,raws,chainItems}=resolve(PS.targets);
+  PS.lastResult={machines,raws}; PS.chainItems=chainItems;
+  buildAltPanel_refresh();
+
+  const totalEx=Object.values(machines).reduce((a,v)=>a+v.exact,0);
+  const totalCl=Object.values(machines).reduce((a,v)=>a+v.ceilInt,0);
+  let totalMW=0; Object.values(machines).forEach(m=>totalMW+=(MACHINE_POWER[m.recipe.machine]||0)*m.exact);
+  const rawCount=Object.keys(raws).length;
+  const altsUsed=Object.values(machines).filter(m=>m.isAlt);
+
+  // Group
+  let groups={};
+  if(PS.groupBy==='layer'){
+    LAYER_ORDER.forEach(l=>groups[l]=[]); groups['L?']=[];
+    Object.entries(machines).forEach(([item,data])=>{const l=data.layer;if(!groups[l])groups[l]=[];groups[l].push({item,...data});});
+  } else if(PS.groupBy==='machine'){
+    Object.entries(machines).forEach(([item,data])=>{const m=data.recipe.machine;if(!groups[m])groups[m]=[];groups[m].push({item,...data});});
+  } else {
+    groups['Full Chain']=Object.entries(machines).map(([item,data])=>({item,...data}));
+  }
+
+  let h='';
+
+  // Summary
+  h+=`<div class="scards">
+    <div class="scard" style="--sc:var(--ficsit)"><div class="sc-l">MACHINES EXACT</div><div class="sc-v">${fmt(totalEx,1)}</div><div class="sc-u">fractional</div></div>
+    <div class="scard" style="--sc:var(--accent)"><div class="sc-l">MACHINES CEIL</div><div class="sc-v">${totalCl}</div><div class="sc-u">integer buildings</div></div>
+    <div class="scard" style="--sc:var(--green)"><div class="sc-l">RAW RESOURCES</div><div class="sc-v">${rawCount}</div><div class="sc-u">input types</div></div>
+    <div class="scard" style="--sc:var(--purple)"><div class="sc-l">PEAK POWER</div><div class="sc-v">${totalMW>=1000?fmt(totalMW/1000,2)+'GW':fmt(totalMW,0)+'MW'}</div><div class="sc-u">at 100% clock</div></div>
+  </div>`;
+
+  if(altsUsed.length>0){
+    h+=`<div class="aiu"><span class="aiu-l">ALTS ACTIVE:</span>${altsUsed.map(m=>`<span class="aiu-tag">◆ ${m.altLabel}</span>`).join('')}</div>`;
+  }
+
+  // Targets
+  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">🎯 Targets</span></div><div class="rgrid">
+    ${PS.targets.map(t=>{const ico=RECIPE_DB[t.item]?.[0]?.icon||'📦';return `<div class="rcard mid"><div class="rc-ico">${ico}</div><div class="rc-inf"><div class="rc-nm">${t.item}</div><div class="rc-rt">${fmt(t.rate,2)}</div><div class="rc-u">per minute</div></div></div>`;}).join('')}
+  </div></div>`;
+
+  // Machines
+  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⚙ Factory Requirements</span><span class="rs-c">${Object.keys(machines).length} TYPES · ${totalCl} BUILDINGS</span></div>`;
+
+  Object.entries(groups).forEach(([gn,items])=>{
+    if(!items||items.length===0) return;
+    const gc=LAYERS[gn]?.color||'#f5a623';
+    const gl=LAYERS[gn]?.label||gn;
+    h+=`<div class="grphdr" style="color:${gc}">${gl}<span class="grp-cnt">${items.length} TYPE${items.length>1?'S':''}</span></div>
+    <table class="mtbl"><thead><tr>
+      <th style="width:35%">FACTORY</th><th>MACHINE</th>
+      ${PS.machineMode!=='ceil'?'<th>EXACT</th>':''}
+      ${PS.machineMode!=='exact'?'<th>CEIL</th>':''}
+      ${PS.showClock==='yes'?'<th>CLOCK%</th>':''}
+      <th>OUT/MIN</th>
+    </tr></thead><tbody>`;
+    items.sort((a,b)=>((LAYERS[a.layer]?.ord??99)-(LAYERS[b.layer]?.ord??99))||a.item.localeCompare(b.item)).forEach(itm=>{
+      const r=itm.recipe;
+      const ck=itm.exact/itm.ceilInt*100;
+      const ckc=ck>=99.5?'ck-over':ck>=75?'ck-ok':'ck-warn';
+      h+=`<tr class="${itm.isAlt?'isalt':''}">
+        <td><div class="td-nm">${r.icon||'⚙'} ${itm.item}${itm.isAlt?`<span class="td-ap">ALT</span>`:''}</div>
+          ${itm.isAlt?`<div style="font-family:var(--mono);font-size:8px;color:var(--purple);margin-top:1px;">${r.label}</div>`:''}</td>
+        <td><span class="mpill ${mpillClass(r.machine)}">${r.machine}</span></td>
+        ${PS.machineMode!=='ceil'?`<td class="td-ex">${fmt(itm.exact,3)}</td>`:''}
+        ${PS.machineMode!=='exact'?`<td class="td-cl">${itm.ceilInt}</td>`:''}
+        ${PS.showClock==='yes'?`<td class="td-ck"><span class="${ckc}">${fmt(ck,1)}%</span></td>`:''}
+        <td style="text-align:right;color:var(--green)">${fmt(itm.totalRate,2)}</td>
+      </tr>`;
+    });
+    h+=`</tbody></table>`;
+  });
+  h+=`</div>`;
+
+  // Raws
+  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⛏ Raw Resources</span><span class="rs-c">${rawCount} TYPES</span></div><div class="rgrid">
+    ${Object.entries(raws).sort((a,b)=>b[1]-a[1]).map(([item,rate])=>{
+      const noMiner=['Water','Crude Oil','Nitrogen Gas','Heavy Oil Residue','Polymer Resin','SAM','Compacted Coal','Petroleum Coke','Solid Biofuel'].includes(item);
+      const miners=noMiner?null:Math.ceil(rate/120*10)/10;
+      const ico=RAWS[item]?.icon||'⛏';
+      return `<div class="rcard raw"><div class="rc-ico">${ico}</div><div class="rc-inf"><div class="rc-nm">${item}</div><div class="rc-rt">${fmt(rate,1)}</div><div class="rc-u">per minute</div>${miners!==null?`<div class="rc-m">~${fmt(miners,1)} Mk.3 pure nodes</div>`:''}</div></div>`;
+    }).join('')}
+  </div></div>`;
+
+  // Power
+  if(PS.showPower==='yes'){
+    const byMt={}; Object.values(machines).forEach(m=>{const mt=m.recipe.machine;if(!byMt[mt])byMt[mt]=0;byMt[mt]+=(MACHINE_POWER[mt]||0)*m.exact;});
+    const maxMW=Math.max(...Object.values(byMt),1);
+    h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⚡ Power Breakdown</span><span class="rs-c">TOTAL: ${totalMW>=1000?fmt(totalMW/1000,2)+' GW':fmt(totalMW,0)+' MW'}</span></div>
+    <div class="pbar-w">
+      ${Object.entries(byMt).sort((a,b)=>b[1]-a[1]).map(([mt,mw])=>`
+      <div class="pbar-r">
+        <span class="pbar-l">${mt}</span>
+        <div class="pbar-fw"><div class="pbar-f" style="width:${(mw/maxMW*100).toFixed(1)}%"></div></div>
+        <span class="pbar-v">${mw>=1000?fmt(mw/1000,2)+' GW':fmt(mw,0)+' MW'}</span>
+      </div>`).join('')}
+    </div></div>`;
+  }
+
+  pane.innerHTML=h;
+}
+
+function buildAltPanel_refresh(){
+  // Refresh only the alt section — never rebuild the whole left panel from here.
+  // Rebuilding lp caused the duplicate milestone panel bug.
+  updateAltBadge();
+  if(activeTab!=='planner') return;
+  const altSec=document.getElementById('altPanelSection');
+  if(!altSec) return;
+  // Keep only the first child (the .slabel), remove everything after it
+  while(altSec.children.length>1) altSec.removeChild(altSec.lastChild);
+  buildAltPanel(altSec);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  REFERENCE LEFT PANEL + RIGHT PANEL
+// ══════════════════════════════════════════════════════════════
+function buildReferenceLeft(lp){
+  lp.innerHTML='';
+  const s1=ps_sec(lp,'Search & Filter');
+  const si=document.createElement('input'); si.type='text'; si.className='fi'; si.placeholder='Search items, machines...'; si.value=RS.search;
+  si.addEventListener('input',e=>{RS.search=e.target.value;renderReference();});
+  s1.appendChild(si);
+
+  const r1=document.createElement('div'); r1.className='row'; r1.style.marginTop='5px';
+  const layerSel=document.createElement('select'); layerSel.className='fi'; layerSel.style.flex='1';
+  [['all','ALL LAYERS'],...LAYER_ORDER.map(k=>[k,LAYERS[k].label])].forEach(([v,l])=>{const o=document.createElement('option');o.value=v;o.textContent=l;if(v===RS.layerFilter)o.selected=true;layerSel.appendChild(o);});
+  layerSel.addEventListener('change',e=>{RS.layerFilter=e.target.value;renderReference();});
+  r1.appendChild(layerSel); s1.appendChild(r1);
+
+  const r2=document.createElement('div'); r2.className='row';
+  const machSel=document.createElement('select'); machSel.className='fi'; machSel.style.flex='1';
+  const machines=['all',...Object.keys(MACHINE_POWER)];
+  machines.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m==='all'?'ALL MACHINES':m;if(m===RS.machineFilter)o.selected=true;machSel.appendChild(o);});
+  machSel.addEventListener('change',e=>{RS.machineFilter=e.target.value;renderReference();});
+  r2.appendChild(machSel); s1.appendChild(r2);
+
+  const r3=document.createElement('div'); r3.className='row';
+  const altBtn=document.createElement('button'); altBtn.className='btn '+(RS.altOnly?'btn-add':'btn-ghost'); altBtn.textContent='ALT RECIPES ONLY';
+  altBtn.style.flex='1';
+  altBtn.addEventListener('click',()=>{RS.altOnly=!RS.altOnly;buildReferenceLeft(lp);renderReference();});
+  r3.appendChild(altBtn); s1.appendChild(r3);
+
+  const s2=ps_sec(lp,'Scale Multiplier');
+  const r4=document.createElement('div'); r4.className='row';
+  const sl=document.createElement('span'); sl.style.cssText='font-family:var(--mono);font-size:9px;color:var(--text3);';sl.textContent='SCALE ×';
+  const si2=document.createElement('input'); si2.type='number'; si2.className='fi fi-w80'; si2.value=RS.scale; si2.min='0.1'; si2.step='0.5';
+  si2.addEventListener('change',e=>{const v=parseFloat(e.target.value);if(!isNaN(v)&&v>0){RS.scale=v;renderReference();}});
+  r4.appendChild(sl); r4.appendChild(si2); s2.appendChild(r4);
+
+  const exBtn=document.createElement('button'); exBtn.className='btn btn-ghost btn-w'; exBtn.textContent='EXPAND ALL';
+  exBtn.addEventListener('click',()=>{filterRefFactories().forEach(f=>RS.expanded.add(f.id));renderReference();});
+  s2.appendChild(exBtn);
+  const colBtn=document.createElement('button'); colBtn.className='btn btn-ghost btn-w'; colBtn.style.marginTop='4px'; colBtn.textContent='COLLAPSE ALL';
+  colBtn.addEventListener('click',()=>{RS.expanded.clear();renderReference();});
+  s2.appendChild(colBtn);
+}
+
+// Build flat factory list from RECIPE_DB for the reference tab
+function buildRefFactories(){
+  const list=[];
+  Object.entries(RECIPE_DB).forEach(([item,variants])=>{
+    const v=variants[0]; // always show vanilla in reference (with alt note)
+    list.push({
+      id:`ref-${item.replace(/\s+/g,'-').toLowerCase()}`,
+      name:item, icon:v.icon||'⚙', layer:v.layer||'L?',
+      machine:v.machine, machineCount:1,
+      inputs:v.in, outputs:v.out,
+      altNote:v.altNote, loopNote:v.loopNote, tags:v.tags||[],
+      altCount:variants.length-1,
+    });
+  });
+  return list;
+}
+const REF_FACTORIES=buildRefFactories();
+
+function filterRefFactories(){
+  const q=RS.search.toLowerCase();
+  return REF_FACTORIES.filter(f=>{
+    if(RS.layerFilter!=='all'&&f.layer!==RS.layerFilter) return false;
+    if(RS.machineFilter!=='all'&&f.machine!==RS.machineFilter) return false;
+    if(RS.altOnly&&f.altCount===0) return false;
+    if(q){
+      const hay=[f.name,f.machine,f.layer,...f.inputs.map(i=>i.item),...f.outputs.map(o=>o.item),f.altNote||''].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderReference(){
+  const pane=document.getElementById('pane-reference');
+  const filtered=filterRefFactories();
+
+  if(filtered.length===0){
+    pane.innerHTML=`<div class="wait"><div class="wait-ico">🔍</div><div class="wait-t">No Results</div><div class="wait-s">Try different search terms or clear the filters.</div></div>`;
+    return;
+  }
+
+  const byLayer={};
+  LAYER_ORDER.forEach(k=>byLayer[k]=[]);
+  byLayer['L?']=[];
+  filtered.forEach(f=>{if(!byLayer[f.layer])byLayer[f.layer]=[];byLayer[f.layer].push(f);});
+
+  let h='';
+  LAYER_ORDER.forEach(lk=>{
+    const facts=byLayer[lk];
+    if(!facts||facts.length===0) return;
+    const lmeta=LAYERS[lk]||{label:lk,color:'#f5a623'};
+    h+=`<div class="ref-lsec">
+      <div class="ref-lhdr">
+        <span class="ref-lnum">LAYER ${lk}</span>
+        <span class="ref-lt" style="color:${lmeta.color}">${lmeta.label}</span>
+        <span class="ref-lc">${facts.length} RECIPES</span>
+      </div>
+      <div class="ref-grid">`;
+    facts.forEach(f=>{
+      const isOpen=RS.expanded.has(f.id);
+      const eff=f.machineCount*RS.scale;
+      const pOut=f.outputs[0]; const pIn=f.inputs[0];
+      const acColor=lmeta.color;
+      h+=`<div class="rfc${isOpen?' open':''}" style="--ca:${acColor}" data-rfid="${f.id}">
+        <div class="rfc-hdr">
+          <div class="rfc-ico">${f.icon}</div>
+          <div class="rfc-tw"><div class="rfc-t">${f.name}</div><div class="rfc-st">${f.machine.toUpperCase()}</div></div>
+          <div class="rfc-bgs">
+            <span class="rb rb-m">${fmt(eff,1)}×</span>
+            ${f.altCount>0?`<span class="rb rb-a">${f.altCount} ALT${f.altCount>1?'S':''}</span>`:''}
+            ${f.tags.includes('loop')?'<span class="rb rb-l">LOOP</span>':''}
+            ${f.tags.includes('key')?'<span class="rb rb-k">KEY</span>':''}
+          </div>
+          <span class="rfc-chv">▼</span>
+        </div>
+        <div class="rfc-qs">
+          <div class="rfc-qi"><div class="rfc-ql">PRIMARY IN</div><div class="rfc-qv">${pIn?pIn.item+' · '+fmt(pIn.rate*RS.scale,2)+'/min':'—'}</div></div>
+          <div class="rfc-qi"><div class="rfc-ql">PRIMARY OUT</div><div class="rfc-qv hi">${pOut?pOut.item+' · '+fmt(pOut.rate*RS.scale,2)+'/min':'—'}</div></div>
+        </div>
+        <div class="rfc-body">
+          ${f.inputs.length>0?`<div class="io-lbl">INPUTS</div><div class="io-list">
+            ${f.inputs.map(i=>`<div class="io-row inp"><span class="io-item">${i.item}</span><span class="io-rate"><span class="sc">${fmt(i.rate*RS.scale,2)}</span>/min (base: ${fmt(i.rate,2)})</span></div>`).join('')}
+          </div>`:''}
+          <div class="io-lbl">OUTPUTS</div><div class="io-list">
+            ${f.outputs.map(o=>`<div class="io-row out"><span class="io-item">${o.item}</span><span class="io-rate"><span class="sc">${fmt(o.rate*RS.scale,2)}</span>/min (base: ${fmt(o.rate,2)})</span></div>`).join('')}
+          </div>
+          ${f.altNote?`<div class="rfc-note aln"><strong>⚗ ALT / NOTES:</strong> ${f.altNote}</div>`:''}
+          ${f.loopNote?`<div class="rfc-note lpn"><strong>♻ LOOP NOTE:</strong> ${f.loopNote}</div>`:''}
+          <div class="vtag">VANILLA RECIPE · v1.0 · 100% CLOCK</div>
+        </div>
+      </div>`;
+    });
+    h+=`</div></div>`;
+  });
+
+  pane.innerHTML=h;
+
+  // Attach expand/collapse
+  pane.querySelectorAll('.rfc').forEach(card=>{
+    card.querySelector('.rfc-hdr').addEventListener('click',()=>{
+      const id=card.dataset.rfid;
+      if(RS.expanded.has(id)) RS.expanded.delete(id); else RS.expanded.add(id);
+      card.classList.toggle('open',RS.expanded.has(id));
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TRAIN LEFT + RIGHT
+// ══════════════════════════════════════════════════════════════
+function buildTrainLeft(lp){
+  lp.innerHTML='';
+  const s1=ps_sec(lp,'Train Setup');
+
+  const r1=document.createElement('div'); r1.className='srow';
+  const l1=document.createElement('span'); l1.className='slbl'; l1.textContent='FREIGHT TYPE';
+  const tg1=document.createElement('div'); tg1.className='tg';
+  ['solid','fluid'].forEach(v=>{
+    const b=document.createElement('button'); b.className='tgo'+(TS.trackType===v?' on':'');
+    b.textContent=v.toUpperCase();
+    b.addEventListener('click',()=>{TS.trackType=v;tg1.querySelectorAll('.tgo').forEach(x=>x.classList.toggle('on',x===b));renderTrain();});
+    tg1.appendChild(b);
+  });
+  r1.appendChild(l1); r1.appendChild(tg1); s1.appendChild(r1);
+
+  const r2=document.createElement('div'); r2.className='srow';
+  const l2=document.createElement('span'); l2.className='slbl'; l2.textContent='CARS / TRAIN';
+  const inp2=document.createElement('input'); inp2.type='number'; inp2.className='fi fi-w80'; inp2.value=TS.carsPerTrain; inp2.min=1; inp2.max=20; inp2.step=1;
+  inp2.addEventListener('change',e=>{TS.carsPerTrain=Math.max(1,parseInt(e.target.value)||1);renderTrain();});
+  r2.appendChild(l2); r2.appendChild(inp2); s1.appendChild(r2);
+
+  const r3=document.createElement('div'); r3.className='srow';
+  const l3=document.createElement('span'); l3.className='slbl'; l3.textContent='FREQUENCY (min)';
+  const inp3=document.createElement('input'); inp3.type='number'; inp3.className='fi fi-w80'; inp3.value=TS.trainFreqMin; inp3.min=0.5; inp3.step=0.5;
+  inp3.addEventListener('change',e=>{TS.trainFreqMin=Math.max(0.5,parseFloat(e.target.value)||2);renderTrain();});
+  r3.appendChild(l3); r3.appendChild(inp3); s1.appendChild(r3);
+
+  const s2=ps_sec(lp,'Add Item Route');
+  const r4=document.createElement('div'); r4.className='row';
+  const itemSel=document.createElement('select'); itemSel.className='fi'; itemSel.style.flex='1';
+  const allItems=[...Object.keys(RAWS),...PRODUCIBLE].sort();
+  allItems.forEach(item=>{const o=document.createElement('option');o.value=item;o.textContent=item;itemSel.appendChild(o);});
+  r4.appendChild(itemSel); s2.appendChild(r4);
+
+  const r5=document.createElement('div'); r5.className='row';
+  const rl=document.createElement('span'); rl.style.cssText='font-family:var(--mono);font-size:9px;color:var(--text3);';rl.textContent='RATE /MIN';
+  const rateInp=document.createElement('input'); rateInp.type='number'; rateInp.className='fi fi-w80'; rateInp.value='60'; rateInp.min=1; rateInp.step=10;
+  const addBtn=document.createElement('button'); addBtn.className='btn btn-add'; addBtn.textContent='+ADD';
+  addBtn.addEventListener('click',()=>{
+    const item=itemSel.value; const rate=parseFloat(rateInp.value);
+    if(!item||isNaN(rate)||rate<=0) return;
+    TS.itemRates.push({item,rate}); buildTrainLeft(lp); renderTrain();
+  });
+  r5.appendChild(rl); r5.appendChild(rateInp); r5.appendChild(addBtn); s2.appendChild(r5);
+
+  if(TS.itemRates.length>0){
+    const s3=ps_sec(lp,'Item Routes');
+    TS.itemRates.forEach((ir,i)=>{
+      const el=document.createElement('div'); el.className='titem';
+      el.innerHTML=`<span class="ti-n">${ir.item}</span><span class="ti-r">${fmt(ir.rate,0)}</span><span class="ti-u">/min</span>`;
+      const rm=document.createElement('button'); rm.className='ti-x'; rm.textContent='×';
+      rm.addEventListener('click',()=>{TS.itemRates.splice(i,1);buildTrainLeft(lp);renderTrain();});
+      el.appendChild(rm); s3.appendChild(el);
+    });
+  }
+}
+
+function renderTrain(){
+  const pane=document.getElementById('pane-train');
+  const capPerCar=TS.trackType==='solid'?3200:3200; // fluid: m³; solid: stacks×stacksize
+  const solidCapPerCar=32; // stacks
+
+  // Belt/pipe reference table always shown
+  const bpRows=TS.trackType==='solid'
+    ? BELT_SPEEDS.map(b=>{
+        const cargoPerTrain=solidCapPerCar*TS.carsPerTrain; // stacks
+        // throughput = cargoPerTrain stacks × defaultStackSize / freqMin
+        const throughput=cargoPerTrain*STACK_SIZE.default/TS.trainFreqMin;
+        return `<tr><td>${b.mk}</td><td>${b.rate}/min</td><td>${fmt(b.rate/60,1)}/s</td><td>${fmt(throughput/b.rate,2)} trains</td></tr>`;
+      })
+    : PIPE_SPEEDS.map(p=>{
+        const capPerTrainM3=3200*TS.carsPerTrain;
+        const throughput=capPerTrainM3/TS.trainFreqMin;
+        return `<tr><td>${p.mk}</td><td>${p.rate} m³/min</td><td>—</td><td>${fmt(throughput/p.rate,2)} trains</td></tr>`;
+      });
+
+  let h=`<div class="train-2col">
+    <div class="t2col-card">
+      <div class="t2-title">Train Config</div>
+      <div class="t2-row"><span class="t2-lbl">FREIGHT TYPE</span><span class="t2-val" style="color:var(--ficsit)">${TS.trackType.toUpperCase()}</span></div>
+      <div class="t2-row"><span class="t2-lbl">CARS PER TRAIN</span><span class="t2-val" style="color:var(--accent)">${TS.carsPerTrain}</span></div>
+      <div class="t2-row"><span class="t2-lbl">ROUND TRIP FREQUENCY</span><span class="t2-val" style="color:var(--green)">${TS.trainFreqMin} min</span></div>
+      <div class="t2-row"><span class="t2-lbl">CAPACITY PER TRIP</span><span class="t2-val" style="color:var(--purple)">
+        ${TS.trackType==='solid'?`${solidCapPerCar*TS.carsPerTrain} stacks`:`${3200*TS.carsPerTrain} m³`}
+      </span></div>
+      <div class="t2-row"><span class="t2-lbl">EFFECTIVE THROUGHPUT</span><span class="t2-val" style="font-size:14px;color:var(--text2)">
+        ${TS.trackType==='solid'?fmt(solidCapPerCar*TS.carsPerTrain*STACK_SIZE.default/TS.trainFreqMin,0)+' items/min (default stack)':fmt(3200*TS.carsPerTrain/TS.trainFreqMin,0)+' m³/min'}
+      </span></div>
+    </div>
+    <div class="t2col-card">
+      <div class="t2-title">${TS.trackType==='solid'?'Belt':'Pipe'} Speed Reference</div>
+      <table class="trk-tbl"><thead><tr>
+        <th>MARK</th><th>${TS.trackType==='solid'?'BELT RATE':'PIPE RATE'}</th>
+        ${TS.trackType==='solid'?'<th>PER SEC</th>':''}
+        <th>TRAINS EQUIV</th>
+      </tr></thead><tbody>
+        ${bpRows.join('')}
+      </tbody></table>
+    </div>
+  </div>`;
+
+  if(TS.itemRates.length>0){
+    h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">🚂 Car Requirements by Item</span></div><div class="train-rgrid">`;
+    TS.itemRates.forEach(ir=>{
+      const stackSz=STACK_SIZE[ir.item]||STACK_SIZE.default;
+      let carsNeeded, freq, note;
+      if(TS.trackType==='solid'){
+        // items per trip = stackSz × solidCapPerCar × carsPerTrain
+        const itemsPerTrip=stackSz*solidCapPerCar*TS.carsPerTrain;
+        // at given frequency, throughput = itemsPerTrip / freqMin
+        const throughput=itemsPerTrip/TS.trainFreqMin;
+        const trainsNeeded=ir.rate/throughput;
+        carsNeeded=Math.ceil(trainsNeeded*TS.carsPerTrain);
+        const trainsCeil=Math.ceil(trainsNeeded);
+        freq=fmt(ir.rate*TS.trainFreqMin/throughput,2);
+        note=`${fmt(trainsNeeded,2)} trains (${trainsCeil} ceil) · stack: ${stackSz}`;
+      } else {
+        const m3PerTrip=3200*TS.carsPerTrain;
+        const throughput=m3PerTrip/TS.trainFreqMin;
+        const trainsNeeded=ir.rate/throughput;
+        carsNeeded=Math.ceil(trainsNeeded*TS.carsPerTrain);
+        const trainsCeil=Math.ceil(trainsNeeded);
+        freq=fmt(ir.rate*TS.trainFreqMin/throughput,2);
+        note=`${fmt(trainsNeeded,2)} trains (${trainsCeil} ceil) · m³/min`;
+      }
+      h+=`<div class="trcard" style="--tc:var(--ficsit)">
+        <div class="trc-item">${ir.item}</div>
+        <div class="trc-rate">${fmt(ir.rate,1)} /min</div>
+        <div class="trc-cars">${carsNeeded}<span class="trc-cl"> CARS TOTAL</span></div>
+        <div class="trc-freq">${note}</div>
+      </div>`;
+    });
+    h+=`</div></div>`;
+  }
+
+  // Quick reference: car capacities
+  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">📦 Car Capacity Reference</span></div>
+  <table class="trk-tbl"><thead><tr><th>CAR TYPE</th><th>CAPACITY</th><th>NOTES</th></tr></thead><tbody>
+    <tr><td>Freight Car (solid)</td><td>32 stacks</td><td>Stack size varies per item — screws: 200, motors: 50, etc.</td></tr>
+    <tr><td>Fluid Freight Car</td><td>3,200 m³</td><td>Pipes connect directly to fluid freight.</td></tr>
+    <tr><td>Locomotive</td><td>—</td><td>1–3 per train. Each adds weight capacity and speed on long routes.</td></tr>
+  </tbody></table></div>`;
+
+  pane.innerHTML=h;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  POWER LEFT + RIGHT
+// ══════════════════════════════════════════════════════════════
+function buildPowerLeft(lp){
+  lp.innerHTML='';
+  const s1=ps_sec(lp,'Power Load Target');
+  const r1=document.createElement('div'); r1.className='srow';
+  const l1=document.createElement('span'); l1.className='slbl'; l1.textContent='TOTAL MW TARGET';
+  const inp=document.createElement('input'); inp.type='number'; inp.className='fi fi-w80'; inp.value=WS.targetMW||''; inp.min=0; inp.step=100; inp.placeholder='0';
+  inp.addEventListener('change',e=>{WS.targetMW=Math.max(0,parseFloat(e.target.value)||0);renderPower();});
+  r1.appendChild(l1); r1.appendChild(inp); s1.appendChild(r1);
+
+  const s2=ps_sec(lp,'Add Load from Factories');
+  const r2=document.createElement('div'); r2.className='pw-add';
+  const namInp=document.createElement('input'); namInp.type='text'; namInp.className='fi'; namInp.style.flex='1'; namInp.placeholder='Load name...';
+  const mwInp=document.createElement('input'); mwInp.type='number'; mwInp.className='fi fi-w60'; mwInp.placeholder='MW'; mwInp.min=1;
+  const addB=document.createElement('button'); addB.className='btn btn-add'; addB.textContent='+';
+  addB.addEventListener('click',()=>{
+    const name=namInp.value.trim()||'Unnamed Load';
+    const mw=parseFloat(mwInp.value);
+    if(isNaN(mw)||mw<=0) return;
+    WS.loads.push({name,mw}); namInp.value=''; mwInp.value='';
+    buildPowerLeft(lp); renderPower();
+  });
+  r2.appendChild(namInp); r2.appendChild(mwInp); r2.appendChild(addB); s2.appendChild(r2);
+
+  const hint=document.createElement('div');
+  hint.style.cssText='font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:4px;line-height:1.5;';
+  hint.innerHTML='TIP: Use the Planner tab to get power figures,<br>then add them here as named loads.';
+  s2.appendChild(hint);
+
+  // Quick-add from planner result
+  if(PS.lastResult){
+    const byMt={}; Object.values(PS.lastResult.machines).forEach(m=>{const mt=m.recipe.machine;if(!byMt[mt])byMt[mt]=0;byMt[mt]+=(MACHINE_POWER[mt]||0)*m.exact;});
+    const totalFromPlanner=Object.values(byMt).reduce((a,b)=>a+b,0);
+    if(totalFromPlanner>0){
+      const qb=document.createElement('button'); qb.className='btn btn-add btn-w'; qb.style.marginTop='5px';
+      qb.textContent=`⚙ IMPORT PLANNER (${fmt(totalFromPlanner,0)} MW)`;
+      qb.addEventListener('click',()=>{
+        WS.loads.push({name:'Planner Result',mw:totalFromPlanner});
+        buildPowerLeft(lp); renderPower();
+      });
+      s2.appendChild(qb);
+    }
+  }
+
+  if(WS.loads.length>0){
+    const s3=ps_sec(lp,'Current Loads');
+    WS.loads.forEach((ld,i)=>{
+      const el=document.createElement('div'); el.className='pload-i';
+      el.innerHTML=`<span class="pl-n">${ld.name}</span><span class="pl-mw">${fmt(ld.mw,0)} MW</span>`;
+      const rm=document.createElement('button'); rm.className='pl-rm'; rm.textContent='×';
+      rm.addEventListener('click',()=>{WS.loads.splice(i,1);buildPowerLeft(lp);renderPower();});
+      el.appendChild(rm); s3.appendChild(el);
+    });
+    const clrAll=document.createElement('button'); clrAll.className='btn btn-danger btn-w'; clrAll.style.marginTop='6px'; clrAll.textContent='CLEAR ALL LOADS';
+    clrAll.addEventListener('click',()=>{WS.loads=[];buildPowerLeft(lp);renderPower();});
+    s3.appendChild(clrAll);
+  }
+}
+
+function renderPower(){
+  const pane=document.getElementById('pane-power');
+  const loadTotal=WS.loads.reduce((a,l)=>a+l.mw,0);
+  const totalMW=WS.targetMW>0?WS.targetMW:loadTotal;
+
+  if(totalMW<=0){
+    pane.innerHTML=`<div class="wait"><div class="wait-ico">⚡</div><div class="wait-t">Power Planner</div><div class="wait-s">Enter a MW target or add loads from your factories to calculate generator requirements.</div></div>`;
+    return;
+  }
+
+  const margin=totalMW*1.2; // 20% safety margin
+
+  let h=`<div class="pw-scards">
+    <div class="pw-scard" style="--pc:var(--green)">
+      <div class="pw-sl">LOAD TOTAL</div><div class="pw-sv">${totalMW>=1000?fmt(totalMW/1000,2)+' GW':fmt(totalMW,0)+' MW'}</div><div class="pw-su">from ${WS.loads.length} source${WS.loads.length!==1?'s':''}</div>
+    </div>
+    <div class="pw-scard" style="--pc:var(--ficsit)">
+      <div class="pw-sl">+20% MARGIN</div><div class="pw-sv">${margin>=1000?fmt(margin/1000,2)+' GW':fmt(margin,0)+' MW'}</div><div class="pw-su">recommended target</div>
+    </div>
+    <div class="pw-scard" style="--pc:var(--accent)">
+      <div class="pw-sl">HEADROOM</div><div class="pw-sv">${fmt(margin-totalMW,0)} MW</div><div class="pw-su">safety buffer</div>
+    </div>
+  </div>`;
+
+  // Loads breakdown
+  if(WS.loads.length>0){
+    const maxLoad=Math.max(...WS.loads.map(l=>l.mw),1);
+    h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">📊 Load Breakdown</span></div><div class="pbar-w">
+      ${WS.loads.map(ld=>`<div class="pbar-r"><span class="pbar-l">${ld.name}</span><div class="pbar-fw"><div class="pbar-f" style="width:${(ld.mw/maxLoad*100).toFixed(1)}%"></div></div><span class="pbar-v">${ld.mw>=1000?fmt(ld.mw/1000,2)+' GW':fmt(ld.mw,0)+' MW'}</span></div>`).join('')}
+    </div></div>`;
+  }
+
+  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⚡ Generator Requirements</span><span class="rs-c">EXACT NEEDED + 20% MARGIN</span></div><div class="gen-grid">`;
+  GENERATORS.forEach(g=>{
+    const exactNeeded=totalMW/g.mw;
+    const withMargin=margin/g.mw;
+    const ceilMargin=Math.ceil(withMargin);
+    h+=`<div class="gen-card" style="--gc:${g.color}">
+      <div class="gen-type">${g.name}</div>
+      <div class="gen-count">${ceilMargin}<span class="gen-cl"> GENERATORS</span></div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:2px;">${fmt(exactNeeded,1)} exact · ${fmt(withMargin,1)} w/margin</div>
+      <div class="gen-fuel">${g.mw} MW each<br>${g.fuel}</div>
+    </div>`;
+  });
+  h+=`</div></div>`;
+
+  // Fuel consumption quick-ref
+  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⛽ Fuel Consumption Reference</span></div>
+  <table class="trk-tbl"><thead><tr><th>GENERATOR</th><th>MW</th><th>FUEL</th><th>CONSUME RATE</th></tr></thead><tbody>
+    <tr><td>Coal Generator</td><td>75</td><td>Coal</td><td>22.5/min per gen</td></tr>
+    <tr><td>Coal Generator</td><td>75</td><td>Compacted Coal</td><td>11.25/min per gen</td></tr>
+    <tr><td>Coal Generator</td><td>75</td><td>Petroleum Coke</td><td>22.5/min per gen</td></tr>
+    <tr><td>Fuel Generator</td><td>150</td><td>Fuel</td><td>12/min per gen</td></tr>
+    <tr><td>Fuel Generator</td><td>150</td><td>Turbofuel</td><td>4.5/min per gen</td></tr>
+    <tr><td>Nuclear Power Plant</td><td>2500</td><td>Uranium Fuel Rod</td><td>0.2/min per plant</td></tr>
+    <tr><td>Nuclear Power Plant</td><td>2500</td><td>Plutonium Fuel Rod</td><td>0.1/min per plant</td></tr>
+  </tbody></table></div>`;
+
+  pane.innerHTML=h;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SHARED UTILS
+// ══════════════════════════════════════════════════════════════
+function showWaiting(paneId,icon,title,sub){
+  document.getElementById(paneId).innerHTML=
+    `<div class="wait"><div class="wait-ico">${icon}</div><div class="wait-t">${title}</div><div class="wait-s">${sub}</div></div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+renderLeftPanel();
+showWaiting('pane-planner','⚙','Awaiting Targets','Select a milestone or add custom targets, then hit CALCULATE.');
+renderReference();
+renderTrain();
+renderPower();
+updateAltBadge();
+</script>
+</body>
+</html>
