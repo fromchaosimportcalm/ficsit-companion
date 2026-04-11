@@ -333,6 +333,64 @@ select.fi option{background:var(--bg3);}
 footer{border-top:1px solid var(--border);padding:10px 22px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;text-align:center;}
 @media(max-width:1060px){:root{--lw:340px;}.scards{grid-template-columns:1fr 1fr;}.train-2col{grid-template-columns:1fr;}}
 @media(max-width:700px){.body-row{grid-template-columns:1fr;}.left-panel{height:auto;position:static;}}
+
+/* GAME MODE MULTIPLIERS */
+.gm-section { display:flex; flex-direction:column; gap:6px; }
+.gm-row { display:flex; align-items:center; gap:7px; }
+.gm-lbl { font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:1px; flex:1; }
+.gm-select {
+  background:var(--bg3); border:1px solid var(--border); color:var(--text);
+  font-family:var(--mono); font-size:10px; padding:4px 7px; outline:none;
+  transition:border-color .2s; cursor:pointer; width:80px; text-align:center;
+}
+.gm-select:focus { border-color:var(--ficsit); }
+.gm-select.active { border-color:var(--orange); color:var(--orange); background:rgba(255,140,66,.07); }
+.gm-select option { background:var(--bg3); }
+.gm-reset { font-family:var(--mono); font-size:9px; color:var(--text3); background:none;
+  border:none; cursor:pointer; letter-spacing:1px; padding:2px 4px; transition:color .15s; }
+.gm-reset:hover { color:var(--ficsit); }
+/* multiplied value highlight in tables */
+.mlt-val { color:var(--orange) !important; }
+.mlt-base { color:var(--text3); font-size:8px; text-decoration:line-through; margin-right:3px; }
+.mlt-badge {
+  display:inline-block; font-family:var(--mono); font-size:7px; padding:1px 4px;
+  border:1px solid rgba(255,140,66,.45); color:var(--orange);
+  background:rgba(255,140,66,.08); margin-left:3px; vertical-align:middle;
+}
+.gm-active-strip {
+  font-family:var(--mono); font-size:8px; color:var(--orange);
+  background:rgba(255,140,66,.07); border:1px solid rgba(255,140,66,.25);
+  padding:4px 8px; letter-spacing:1px; margin-bottom:6px;
+}
+
+/* WORLD NODE USAGE */
+.node-bar-wrap{height:5px;background:var(--bg3);border:1px solid var(--border);margin-top:3px;position:relative;}
+.node-bar-fill{height:100%;transition:width .4s;}
+.node-ok   {background:var(--green);}
+.node-warn {background:var(--orange);}
+.node-over {background:var(--red);}
+.node-pct  {font-family:var(--mono);font-size:8px;margin-top:2px;}
+.node-pct.ok   {color:var(--green);}
+.node-pct.warn {color:var(--orange);}
+.node-pct.over {color:var(--red);}
+/* BELT / PIPE HINTS */
+.belt-hint{font-family:var(--mono);font-size:8px;margin-top:2px;letter-spacing:.5px;}
+.belt-ok  {color:var(--text3);}
+.belt-warn{color:var(--orange);}
+.belt-over{color:var(--red);}
+.belt-pill{display:inline-block;padding:0 4px;border:1px solid;font-size:7px;margin-left:2px;vertical-align:middle;}
+.bp-ok  {border-color:rgba(61,90,112,.5);color:var(--text3);}
+.bp-warn{border-color:rgba(255,140,66,.5);color:var(--orange);background:rgba(255,140,66,.06);}
+.bp-over{border-color:rgba(255,87,87,.5);color:var(--red);background:rgba(255,87,87,.06);}
+/* URL SHARE */
+.share-bar{display:flex;gap:6px;align-items:center;margin-bottom:14px;
+  padding:8px 12px;background:var(--bg2);border:1px solid var(--border);}
+.share-url{font-family:var(--mono);font-size:9px;color:var(--text3);flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.5px;}
+.share-btn{font-family:var(--mono);font-size:9px;padding:4px 10px;border:1px solid var(--border2);
+  color:var(--text2);background:none;cursor:pointer;letter-spacing:1px;transition:all .15s;white-space:nowrap;}
+.share-btn:hover{border-color:var(--ficsit);color:var(--ficsit);}
+.share-btn.copied{border-color:var(--green);color:var(--green);}
 </style>
 </head>
 <body>
@@ -349,13 +407,14 @@ footer{border-top:1px solid var(--border);padding:10px 22px;font-family:var(--mo
   <div class="hdr-tabs">
     <button class="tab-btn active" data-tab="planner"><span class="tab-icon">⚙</span>Planner</button>
     <button class="tab-btn" data-tab="reference"><span class="tab-icon">📋</span>Reference</button>
-    <button class="tab-btn" data-tab="train"><span class="tab-icon">🚂</span>Train</button>
+    <button class="tab-btn" data-tab="train"><span class="tab-icon">🚛</span>Logistics</button>
     <button class="tab-btn" data-tab="power"><span class="tab-icon">⚡</span>Power</button>
   </div>
   <div class="hdr-right">
     <span class="hbadge hb-o">v1.0</span>
     <span class="hbadge hb-b">VANILLA BASE</span>
     <span class="hbadge hb-p" id="altBadge">0 ALTS</span>
+  <span class="hbadge" id="gmBadge" style="color:var(--text3);border-color:rgba(61,90,112,.4);">VANILLA MODE</span>
   </div>
 </header>
 
@@ -364,7 +423,7 @@ footer{border-top:1px solid var(--border);padding:10px 22px;font-family:var(--mo
 <div class="right-panel">
   <div class="tab-pane active" id="pane-planner"></div>
   <div class="tab-pane" id="pane-reference"></div>
-  <div class="tab-pane" id="pane-train"></div>
+  <div class="tab-pane" id="pane-train"></div>  <!-- Logistics: Train / Truck / Drone -->
   <div class="tab-pane" id="pane-power"></div>
 </div>
 </div>
@@ -982,6 +1041,79 @@ const GENERATORS = [
     note:'Phase 5 endgame. Requires SAM → Reanimated SAM → Ficsite Trigon chain.' },
 ];
 
+// ── WORLD NODE COUNTS (v1.0 map, vanilla)
+// Source: Satisfactory wiki / community survey
+// Format: { i:impure, n:normal, p:pure }
+// maxRate = (i*30 + n*60 + p*120) at Mk.3 100% clock
+const WORLD_NODES = {
+  'Iron Ore':       { i:33, n:41, p:46 },  // total: 120 nodes, max 8580/min
+  'Copper Ore':     { i:9,  n:28, p:12 },  // total: 49 nodes, max 2610/min
+  'Coal':           { i:6,  n:29, p:15 },  // total: 50 nodes, max 3720/min
+  'Limestone':      { i:12, n:47, p:27 },  // total: 86 nodes, max 6300/min
+  'Bauxite':        { i:5,  n:6,  p:2  },  // total: 13 nodes, max 690/min
+  'Raw Quartz':     { i:0,  n:11, p:5  },  // total: 16 nodes, max 1260/min
+  'Caterium Ore':   { i:0,  n:8,  p:5  },  // total: 13 nodes, max 1080/min
+  'Sulfur':         { i:1,  n:7,  p:3  },  // total: 11 nodes, max 810/min
+  'Uranium':        { i:0,  n:3,  p:0  },  // total: 3 nodes, max 180/min
+  'SAM':            { i:0,  n:8,  p:0  },  // total: 8 nodes (all normal)
+  'Crude Oil':      { i:0,  n:8,  p:4  },  // total: 12 nodes — Oil Extractor rates differ
+  'Nitrogen Gas':   { i:0,  n:0,  p:8  },  // total: 8 resource wells (varies by satellites)
+};
+
+// Oil Extractor rates: Normal=60/min, Pure=120/min at Mk.2 100%
+// Nitrogen: highly variable by well configuration; use as rough guide only
+function worldMaxRate(item){
+  const n=WORLD_NODES[item]; if(!n) return null;
+  if(item==='Crude Oil') return n.n*60+n.p*120;
+  if(item==='Nitrogen Gas') return n.p*150; // pressurizer estimate
+  return n.i*30+n.n*60+n.p*120;
+}
+function worldNodeTotal(item){
+  const n=WORLD_NODES[item]; if(!n) return null;
+  return n.i+n.n+n.p;
+}
+
+// ── BELT & PIPE CAPACITY (items/min or m³/min)
+const BELT_MK = [
+  {mk:'Mk.1',rate:60},{mk:'Mk.2',rate:120},{mk:'Mk.3',rate:270},
+  {mk:'Mk.4',rate:480},{mk:'Mk.5',rate:780},{mk:'Mk.6',rate:1200},
+];
+const PIPE_MK = [
+  {mk:'Mk.1',rate:300},{mk:'Mk.2',rate:600},
+];
+// Fluid items that travel by pipe
+const FLUID_ITEMS = new Set([
+  'Water','Crude Oil','Heavy Oil Residue','Fuel','Turbofuel','Liquid Biofuel',
+  'Alumina Solution','Sulfuric Acid','Nitric Acid','Nitrogen Gas',
+  'Polymer Resin', // technically liquid in pipes
+]);
+function beltForRate(rate){
+  if(rate<=0) return null;
+  return BELT_MK.find(b=>b.rate>=rate)||BELT_MK[BELT_MK.length-1];
+}
+function pipeForRate(rate){
+  if(rate<=0) return null;
+  return PIPE_MK.find(p=>p.rate>=rate)||PIPE_MK[PIPE_MK.length-1];
+}
+function logisticsForRate(item,rate){
+  return FLUID_ITEMS.has(item)?pipeForRate(rate):beltForRate(rate);
+}
+function logisticsLabel(item){
+  return FLUID_ITEMS.has(item)?'PIPE':'BELT';
+}
+function logisticsMk(item,rate){
+  const t=logisticsForRate(item,rate); return t?t.mk:'Mk.6+';
+}
+// Warning levels: ok=fits, warn=within 10% of limit, over=exceeds
+function logisticsStatus(item,rate){
+  const marks=FLUID_ITEMS.has(item)?PIPE_MK:BELT_MK;
+  const fit=marks.find(m=>m.rate>=rate);
+  if(!fit) return 'over';
+  if(rate/fit.rate>0.9) return 'warn';
+  return 'ok';
+}
+
+
 // ══════════════════════════════════════════════════════════════
 //  DERIVED / HELPERS
 // ══════════════════════════════════════════════════════════════
@@ -1003,6 +1135,23 @@ function mpillClass(m){
 
 function activeAltCount(){ return Object.values(PS.altSelections).filter(v=>v>0).length; }
 
+function updateGmBadge(){
+  const b=document.getElementById('gmBadge');
+  if(!b) return;
+  const active=GM.recipe!==1||GM.power!==1;
+  if(!active){
+    b.textContent='VANILLA MODE'; b.style.color='var(--text3)';
+    b.style.borderColor='rgba(61,90,112,.4)'; b.style.background='transparent';
+  } else {
+    const parts=[];
+    if(GM.recipe!==1) parts.push(`RCP ×${GM.recipe}`);
+    if(GM.power!==1)  parts.push(`PWR ×${GM.power}`);
+    b.textContent=parts.join(' · ');
+    b.style.color='var(--orange)'; b.style.borderColor='rgba(255,140,66,.45)';
+    b.style.background='rgba(255,140,66,.08)';
+  }
+}
+
 function updateAltBadge(){
   const n=activeAltCount();
   const b=document.getElementById('altBadge');
@@ -1022,8 +1171,48 @@ const PS = {
   lastResult:null, chainItems:[],
 };
 const RS = { search:'', layerFilter:'all', machineFilter:'all', altOnly:false, scale:1, expanded:new Set() };
-const TS = { itemRates:[], trainFreqMin:2, carsPerTrain:3, trackType:'solid' };
+// ── LOGISTICS STATE
+const TS = {
+  vehicle:'train',      // 'train' | 'truck' | 'drone'
+  itemRates:[],
+  // Train
+  trainFreqMin:2, carsPerTrain:3, trainCargoType:'solid',
+  // Truck
+  truckFreqMin:3, truckCargoType:'solid',
+  // Drone
+  droneDistKm:1.0, droneCount:1,
+};
+
+// Vehicle capacity constants
+const VEHICLES = {
+  train: {
+    name:'Train',icon:'🚂',
+    solid:{ carCap:32, unit:'stacks', perCar:true },
+    fluid:{ carCap:3200, unit:'m³', perCar:true },
+    note:'Freight Car (solid): 32 stacks. Fluid Freight Car: 3,200 m³. Multiple cars per train.',
+  },
+  truck: {
+    name:'Truck / Explorer',icon:'🚛',
+    solid:{ carCap:32, unit:'stacks', perCar:false },
+    fluid:{ carCap:2000, unit:'m³', perCar:false },
+    note:'Solid Truck: 32 stacks (same as freight car). Fluid Truck (v1.2): 2,000 m³. Single unit.',
+  },
+  drone: {
+    name:'Drone',icon:'🚁',
+    solid:{ carCap:4, unit:'slots', perCar:false },  // 4 inventory slots
+    fluid:null,  // drones don't carry fluid
+    note:'Drones carry 4 inventory slots. Speed ≈120 km/h. Powered by Batteries consumed per trip.',
+  },
+};
 const WS = { loads:[], targetMW:0 };
+// Game Mode multipliers (v1.2). 1 = default/vanilla.
+const GM = {
+  recipe:    1,    // Recipe Parts Cost Multiplier — scales all recipe INPUT rates
+  power:     1,    // Power Consumption Multiplier — scales all machine MW draw
+  // Space Elevator multiplier intentionally omitted (user adjusts targets manually)
+};
+const GM_RECIPE_OPTS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+const GM_POWER_OPTS  = [0.25, 0.5, 0.75, 1, 2, 5];
 
 // ══════════════════════════════════════════════════════════════
 //  RESOLVER
@@ -1037,7 +1226,7 @@ function resolve(targets){
     if(isRaw(item)) return;
     const r=getActiveRecipe(item); if(!r) return;
     const po=r.out.find(o=>o.item===item); if(!po) return;
-    r.in.forEach(i=>req1(i.item, i.rate*(rate/po.rate)));
+    r.in.forEach(i=>req1(i.item, i.rate*GM.recipe*(rate/po.rate)));
   }
   targets.forEach(t=>req1(t.item,t.rate));
 
@@ -1051,7 +1240,7 @@ function resolve(targets){
     const po=r.out.find(o=>o.item===item); if(!po) return;
     const totalNeeded=needed[item]||rate; // fallback to current rate if not in pass1
     const m=totalNeeded/po.rate;
-    r.in.forEach(i=>req2(i.item,i.rate*m));
+    r.in.forEach(i=>req2(i.item,i.rate*GM.recipe*m));
   }
   targets.forEach(t=>req2(t.item,t.rate));
 
@@ -1125,6 +1314,35 @@ function buildPlannerLeft(lp){
     mg.appendChild(b);
   });
 
+  // Game Mode Multipliers (v1.2)
+  const gmSec=ps_sec(lp,'Game Mode · v1.2');
+  const gmDiv=document.createElement('div'); gmDiv.className='gm-section'; gmSec.appendChild(gmDiv);
+
+  function buildGmRow(labelText, optArr, stateKey){
+    const r=document.createElement('div'); r.className='gm-row';
+    const l=document.createElement('span'); l.className='gm-lbl'; l.textContent=labelText;
+    const s=document.createElement('select'); s.className='gm-select'+(GM[stateKey]!==1?' active':'');
+    optArr.forEach(v=>{
+      const o=document.createElement('option'); o.value=v; o.textContent=v===1?`×${v} (default)`:`×${v}`;
+      if(GM[stateKey]===v) o.selected=true; s.appendChild(o);
+    });
+    s.addEventListener('change',e=>{
+      GM[stateKey]=parseFloat(e.target.value);
+      s.className='gm-select'+(GM[stateKey]!==1?' active':'');
+      updateGmBadge();
+      if(PS.lastResult) renderPlannerRight();
+    });
+    r.appendChild(l); r.appendChild(s); gmDiv.appendChild(r);
+  }
+
+  buildGmRow('RECIPE COST',    GM_RECIPE_OPTS, 'recipe');
+  buildGmRow('POWER DRAW',     GM_POWER_OPTS,  'power');
+
+  const gmResetRow=document.createElement('div'); gmResetRow.style.cssText='display:flex;justify-content:flex-end;margin-top:2px;';
+  const gmRst=document.createElement('button'); gmRst.className='gm-reset'; gmRst.textContent='RESET TO VANILLA';
+  gmRst.addEventListener('click',()=>{GM.recipe=1;GM.power=1;updateGmBadge();buildPlannerLeft(lp);if(PS.lastResult)renderPlannerRight();});
+  gmResetRow.appendChild(gmRst); gmDiv.appendChild(gmResetRow);
+
   // Custom targets
   const ct=ps_sec(lp,'Custom Targets');
   const row=document.createElement('div'); row.className='row'; ct.appendChild(row);
@@ -1142,6 +1360,19 @@ function buildPlannerLeft(lp){
   });
   qty.addEventListener('keydown',e=>{if(e.key==='Enter')ab.click();});
   row.appendChild(sel); row.appendChild(qty); row.appendChild(ab);
+
+  // Divider + active targets label — visual separation between controls and the list
+  if(PS.targets.length>0){
+    const div=document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;gap:8px;margin:9px 0 5px;';
+    const ln1=document.createElement('div'); ln1.style.cssText='flex:1;height:1px;background:var(--border);';
+    const lbl=document.createElement('span');
+    lbl.style.cssText='font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:2px;white-space:nowrap;text-transform:uppercase;';
+    lbl.textContent=`Active Targets · ${PS.targets.length}`;
+    const ln2=document.createElement('div'); ln2.style.cssText='flex:1;height:1px;background:var(--border);';
+    div.appendChild(ln1); div.appendChild(lbl); div.appendChild(ln2);
+    ct.appendChild(div);
+  }
 
   const tlist=document.createElement('div'); tlist.className='tlist'; ct.appendChild(tlist);
   PS.targets.forEach((t,i)=>{
@@ -1176,6 +1407,11 @@ function buildPlannerLeft(lp){
   // Action buttons
   const calc=document.createElement('button'); calc.className='btn-go'; calc.textContent='▶ CALCULATE';
   calc.addEventListener('click',renderPlannerRight); stSec.appendChild(calc);
+  // Share button
+  const shr=document.createElement('button'); shr.className='btn btn-ghost btn-w'; shr.id='shareBtn'; shr.textContent='⎘ SHARE PLAN';
+  shr.addEventListener('click',()=>shareURL());
+  stSec.appendChild(shr);
+
   const clr=document.createElement('button'); clr.className='btn btn-ghost btn-w'; clr.textContent='✕ CLEAR RESULTS';
   clr.addEventListener('click',()=>{PS.lastResult=null;showWaiting('pane-planner','⚙','Awaiting Targets','Select a milestone or add custom targets, then hit CALCULATE.');});
   stSec.appendChild(clr);
@@ -1244,10 +1480,11 @@ function renderPlannerRight(){
   const {machines,raws,chainItems}=resolve(PS.targets);
   PS.lastResult={machines,raws}; PS.chainItems=chainItems;
   buildAltPanel_refresh();
+  pushState(); // update URL hash on every calculate
 
   const totalEx=Object.values(machines).reduce((a,v)=>a+v.exact,0);
   const totalCl=Object.values(machines).reduce((a,v)=>a+v.ceilInt,0);
-  let totalMW=0; Object.values(machines).forEach(m=>totalMW+=(MACHINE_POWER[m.recipe.machine]||0)*m.exact);
+  let totalMW=0; Object.values(machines).forEach(m=>totalMW+=(MACHINE_POWER[m.recipe.machine]||0)*GM.power*m.exact);
   const rawCount=Object.keys(raws).length;
   const altsUsed=Object.values(machines).filter(m=>m.isAlt);
 
@@ -1264,6 +1501,15 @@ function renderPlannerRight(){
 
   let h='';
 
+  // Game Mode active strip
+  const gmActive=(GM.recipe!==1||GM.power!==1);
+  if(gmActive){
+    const parts=[];
+    if(GM.recipe!==1) parts.push(`RECIPE COST ×${GM.recipe}`);
+    if(GM.power!==1)  parts.push(`POWER ×${GM.power}`);
+    h+=`<div class="gm-active-strip">⚠ GAME MODE ACTIVE: ${parts.join(' · ')} — affected values highlighted in amber</div>`;
+  }
+
   // Summary
   h+=`<div class="scards">
     <div class="scard" style="--sc:var(--ficsit)"><div class="sc-l">MACHINES EXACT</div><div class="sc-v">${fmt(totalEx,1)}</div><div class="sc-u">fractional</div></div>
@@ -1275,6 +1521,13 @@ function renderPlannerRight(){
   if(altsUsed.length>0){
     h+=`<div class="aiu"><span class="aiu-l">ALTS ACTIVE:</span>${altsUsed.map(m=>`<span class="aiu-tag">◆ ${m.altLabel}</span>`).join('')}</div>`;
   }
+
+  // Share bar
+  pushState();
+  h+=`<div class="share-bar">
+    <span class="share-url" id="shareUrlField">${window.location.href}</span>
+    <button class="share-btn" id="shareCopyBtn" onclick="shareURL()">COPY LINK</button>
+  </div>`;
 
   // Targets
   h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">🎯 Targets</span></div><div class="rgrid">
@@ -1290,16 +1543,30 @@ function renderPlannerRight(){
     const gl=LAYERS[gn]?.label||gn;
     h+=`<div class="grphdr" style="color:${gc}">${gl}<span class="grp-cnt">${items.length} TYPE${items.length>1?'S':''}</span></div>
     <table class="mtbl"><thead><tr>
-      <th style="width:35%">FACTORY</th><th>MACHINE</th>
+      <th style="width:32%">FACTORY</th><th>MACHINE</th>
       ${PS.machineMode!=='ceil'?'<th>EXACT</th>':''}
       ${PS.machineMode!=='exact'?'<th>CEIL</th>':''}
       ${PS.showClock==='yes'?'<th>CLOCK%</th>':''}
-      <th>OUT/MIN</th>
+      <th>OUT/MIN</th><th>LOGISTICS</th>
     </tr></thead><tbody>`;
     items.sort((a,b)=>((LAYERS[a.layer]?.ord??99)-(LAYERS[b.layer]?.ord??99))||a.item.localeCompare(b.item)).forEach(itm=>{
       const r=itm.recipe;
       const ck=itm.exact/itm.ceilInt*100;
       const ckc=ck>=99.5?'ck-over':ck>=75?'ck-ok':'ck-warn';
+      // belt/pipe hints
+      const perMachineRate=itm.totalRate/itm.ceilInt;
+      const combinedRate=itm.totalRate;
+      const lbl=logisticsLabel(itm.item);
+      const perSt=logisticsStatus(itm.item,perMachineRate);
+      const combSt=logisticsStatus(itm.item,combinedRate);
+      const perMk=logisticsMk(itm.item,perMachineRate);
+      const combMk=logisticsMk(itm.item,combinedRate);
+      const beltCell=`<div class="belt-hint belt-${perSt}">
+        per machine: <span class="belt-pill bp-${perSt}">${lbl} ${perMk}</span> ${fmt(perMachineRate,1)}/min
+      </div>
+      <div class="belt-hint belt-${combSt}">
+        combined: <span class="belt-pill bp-${combSt}">${lbl} ${combMk}</span> ${fmt(combinedRate,1)}/min
+      </div>`;
       h+=`<tr class="${itm.isAlt?'isalt':''}">
         <td><div class="td-nm">${r.icon||'⚙'} ${itm.item}${itm.isAlt?`<span class="td-ap">ALT</span>`:''}</div>
           ${itm.isAlt?`<div style="font-family:var(--mono);font-size:8px;color:var(--purple);margin-top:1px;">${r.label}</div>`:''}</td>
@@ -1308,6 +1575,7 @@ function renderPlannerRight(){
         ${PS.machineMode!=='exact'?`<td class="td-cl">${itm.ceilInt}</td>`:''}
         ${PS.showClock==='yes'?`<td class="td-ck"><span class="${ckc}">${fmt(ck,1)}%</span></td>`:''}
         <td style="text-align:right;color:var(--green)">${fmt(itm.totalRate,2)}</td>
+        <td>${beltCell}</td>
       </tr>`;
     });
     h+=`</tbody></table>`;
@@ -1315,18 +1583,67 @@ function renderPlannerRight(){
   h+=`</div>`;
 
   // Raws
-  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⛏ Raw Resources</span><span class="rs-c">${rawCount} TYPES</span></div><div class="rgrid">
+  const gmMltActive=GM.recipe!==1;
+  const rawMltNote=gmMltActive?` <span style="font-family:var(--mono);font-size:8px;color:var(--orange);">×${GM.recipe} COST MULTIPLIER ACTIVE</span>`:'';
+  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⛏ Raw Resources</span><span class="rs-c">${rawCount} TYPES</span>${rawMltNote}</div><div class="rgrid">
     ${Object.entries(raws).sort((a,b)=>b[1]-a[1]).map(([item,rate])=>{
-      const noMiner=['Water','Crude Oil','Nitrogen Gas','Heavy Oil Residue','Polymer Resin','SAM','Compacted Coal','Petroleum Coke','Solid Biofuel'].includes(item);
-      const miners=noMiner?null:Math.ceil(rate/120*10)/10;
+      const noExtractor=['Water','Heavy Oil Residue','Polymer Resin','Compacted Coal','Petroleum Coke','Solid Biofuel'].includes(item);
       const ico=RAWS[item]?.icon||'⛏';
-      return `<div class="rcard raw"><div class="rc-ico">${ico}</div><div class="rc-inf"><div class="rc-nm">${item}</div><div class="rc-rt">${fmt(rate,1)}</div><div class="rc-u">per minute</div>${miners!==null?`<div class="rc-m">~${fmt(miners,1)} Mk.3 pure nodes</div>`:''}</div></div>`;
+
+      // Rate display — strike base, show multiplied in amber if recipe cost is active
+      const baseRate=rate/GM.recipe;
+      const rateHtml=gmMltActive
+        ?`<span class="mlt-base">${fmt(baseRate,1)}</span><span class="mlt-val">${fmt(rate,1)}</span>`
+        :`${fmt(rate,1)}`;
+
+      // Miner count: use base rate (what vanilla nodes must supply) ÷ Mk.3 normal node rate (60/min)
+      // Normal node is the median realistic node — gives a practical "mining outpost" count
+      // Use base rate so the count reflects vanilla node planning, not the recipe multiplier
+      const normalNodeRate=item==='Crude Oil'?60:60; // Mk.3 normal node: 60/min solid, 60/min oil
+      const minerCount=noExtractor?null:Math.ceil(baseRate/normalNodeRate*10)/10;
+
+      // World supply: compare base rate against vanilla world max
+      // Comparing multiplied rate would give misleading "over 100%" figures on recipe cost >1
+      const maxW=worldMaxRate(item);
+      const nodeTotal=worldNodeTotal(item);
+      const supplyPct=maxW?(baseRate/maxW*100):null;
+
+      let nodeHtml='';
+      if(supplyPct!==null){
+        const barPct=Math.min(supplyPct,100); // bar caps at 100% visually
+        const isOver=supplyPct>100;
+        const status=isOver?'over':supplyPct>75?'warn':'ok';
+        const pctLabel=isOver?`>${fmt(supplyPct,0)}% of world max`:fmt(supplyPct,1)+'% of world max';
+        const overMsg=isOver
+          ? `<div class="node-pct over" style="margin-top:2px;">⚠ Exceeds sustained world supply — reduce scope or overclock miners</div>`
+          : '';
+        // Suppress the overflow warning if recipe cost multiplier is causing it
+        // (player can still complete — just takes longer at lower rate)
+        const gmOverMsg=isOver&&gmMltActive
+          ? `<div class="node-pct" style="color:var(--orange);margin-top:2px;">Rate reflects ×${GM.recipe} recipe cost. At vanilla cost this would use ${fmt(supplyPct/GM.recipe,1)}% of world supply.</div>`
+          : overMsg;
+        nodeHtml=`
+          <div class="node-bar-wrap"><div class="node-bar-fill node-${status}" style="width:${barPct.toFixed(1)}%"></div></div>
+          <div class="node-pct ${isOver?'':''}${status}" style="margin-top:2px;">${pctLabel} · ${nodeTotal} nodes · max ${fmt(maxW,0)}/min</div>
+          ${gmOverMsg}`;
+      }
+
+      return `<div class="rcard raw" style="${gmMltActive?'border-left-color:var(--orange)':''}">
+        <div class="rc-ico">${ico}</div>
+        <div class="rc-inf">
+          <div class="rc-nm">${item}</div>
+          <div class="rc-rt">${rateHtml}</div>
+          <div class="rc-u">per minute</div>
+          ${minerCount!==null?`<div class="rc-m">~${fmt(minerCount,1)} Mk.3 normal-node miners needed</div>`:''}
+          <div>${nodeHtml}</div>
+        </div>
+      </div>`;
     }).join('')}
   </div></div>`;
 
   // Power
   if(PS.showPower==='yes'){
-    const byMt={}; Object.values(machines).forEach(m=>{const mt=m.recipe.machine;if(!byMt[mt])byMt[mt]=0;byMt[mt]+=(MACHINE_POWER[mt]||0)*m.exact;});
+    const byMt={}; Object.values(machines).forEach(m=>{const mt=m.recipe.machine;if(!byMt[mt])byMt[mt]=0;byMt[mt]+=(MACHINE_POWER[mt]||0)*GM.power*m.exact;});
     const maxMW=Math.max(...Object.values(byMt),1);
     h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⚡ Power Breakdown</span><span class="rs-c">TOTAL: ${totalMW>=1000?fmt(totalMW/1000,2)+' GW':fmt(totalMW,0)+' MW'}</span></div>
     <div class="pbar-w">
@@ -1510,48 +1827,124 @@ function renderReference(){
 // ══════════════════════════════════════════════════════════════
 function buildTrainLeft(lp){
   lp.innerHTML='';
-  const s1=ps_sec(lp,'Train Setup');
 
-  const r1=document.createElement('div'); r1.className='srow';
-  const l1=document.createElement('span'); l1.className='slbl'; l1.textContent='FREIGHT TYPE';
-  const tg1=document.createElement('div'); tg1.className='tg';
-  ['solid','fluid'].forEach(v=>{
-    const b=document.createElement('button'); b.className='tgo'+(TS.trackType===v?' on':'');
-    b.textContent=v.toUpperCase();
-    b.addEventListener('click',()=>{TS.trackType=v;tg1.querySelectorAll('.tgo').forEach(x=>x.classList.toggle('on',x===b));renderTrain();});
-    tg1.appendChild(b);
+  // Vehicle selector
+  const vs=ps_sec(lp,'Vehicle Type');
+  const vrow=document.createElement('div'); vrow.className='row'; vs.appendChild(vrow);
+  Object.entries(VEHICLES).forEach(([key,v])=>{
+    const b=document.createElement('button');
+    b.className='btn '+(TS.vehicle===key?'btn-add':'btn-ghost');
+    b.style.cssText='flex:1;font-size:11px;padding:7px 4px;';
+    b.textContent=v.icon+' '+v.name;
+    b.addEventListener('click',()=>{ TS.vehicle=key; buildTrainLeft(lp); renderTrain(); });
+    vrow.appendChild(b);
   });
-  r1.appendChild(l1); r1.appendChild(tg1); s1.appendChild(r1);
 
-  const r2=document.createElement('div'); r2.className='srow';
-  const l2=document.createElement('span'); l2.className='slbl'; l2.textContent='CARS / TRAIN';
-  const inp2=document.createElement('input'); inp2.type='number'; inp2.className='fi fi-w80'; inp2.value=TS.carsPerTrain; inp2.min=1; inp2.max=20; inp2.step=1;
-  inp2.addEventListener('change',e=>{TS.carsPerTrain=Math.max(1,parseInt(e.target.value)||1);renderTrain();});
-  r2.appendChild(l2); r2.appendChild(inp2); s1.appendChild(r2);
+  const vinfo=VEHICLES[TS.vehicle];
+  const noteEl=document.createElement('div');
+  noteEl.style.cssText='font-family:var(--mono);font-size:8px;color:var(--text3);line-height:1.5;margin-top:6px;';
+  noteEl.textContent=vinfo.note; vs.appendChild(noteEl);
 
-  const r3=document.createElement('div'); r3.className='srow';
-  const l3=document.createElement('span'); l3.className='slbl'; l3.textContent='FREQUENCY (min)';
-  const inp3=document.createElement('input'); inp3.type='number'; inp3.className='fi fi-w80'; inp3.value=TS.trainFreqMin; inp3.min=0.5; inp3.step=0.5;
-  inp3.addEventListener('change',e=>{TS.trainFreqMin=Math.max(0.5,parseFloat(e.target.value)||2);renderTrain();});
-  r3.appendChild(l3); r3.appendChild(inp3); s1.appendChild(r3);
+  // ── TRAIN CONFIG
+  if(TS.vehicle==='train'){
+    const s1=ps_sec(lp,'Train Config');
 
+    // Cargo type
+    const r0=document.createElement('div'); r0.className='srow';
+    const l0=document.createElement('span'); l0.className='slbl'; l0.textContent='CARGO TYPE';
+    const tg0=document.createElement('div'); tg0.className='tg';
+    ['solid','fluid'].forEach(v=>{
+      const b=document.createElement('button'); b.className='tgo'+(TS.trainCargoType===v?' on':'');
+      b.textContent=v.toUpperCase();
+      b.addEventListener('click',()=>{TS.trainCargoType=v;tg0.querySelectorAll('.tgo').forEach(x=>x.classList.toggle('on',x===b));renderTrain();});
+      tg0.appendChild(b);
+    });
+    r0.appendChild(l0); r0.appendChild(tg0); s1.appendChild(r0);
+
+    const r1=document.createElement('div'); r1.className='srow';
+    const l1=document.createElement('span'); l1.className='slbl'; l1.textContent='CARS / TRAIN';
+    const i1=document.createElement('input'); i1.type='number'; i1.className='fi fi-w80'; i1.value=TS.carsPerTrain; i1.min=1; i1.max=20; i1.step=1;
+    i1.addEventListener('change',e=>{TS.carsPerTrain=Math.max(1,parseInt(e.target.value)||1);renderTrain();});
+    r1.appendChild(l1); r1.appendChild(i1); s1.appendChild(r1);
+
+    const r2=document.createElement('div'); r2.className='srow';
+    const l2=document.createElement('span'); l2.className='slbl'; l2.textContent='ROUND TRIP (min)';
+    const i2=document.createElement('input'); i2.type='number'; i2.className='fi fi-w80'; i2.value=TS.trainFreqMin; i2.min=0.5; i2.step=0.5;
+    i2.addEventListener('change',e=>{TS.trainFreqMin=Math.max(0.5,parseFloat(e.target.value)||2);renderTrain();});
+    r2.appendChild(l2); r2.appendChild(i2); s1.appendChild(r2);
+  }
+
+  // ── TRUCK CONFIG
+  if(TS.vehicle==='truck'){
+    const s1=ps_sec(lp,'Truck Config');
+
+    const r0=document.createElement('div'); r0.className='srow';
+    const l0=document.createElement('span'); l0.className='slbl'; l0.textContent='CARGO TYPE';
+    const tg0=document.createElement('div'); tg0.className='tg';
+    ['solid','fluid'].forEach(v=>{
+      const b=document.createElement('button'); b.className='tgo'+(TS.truckCargoType===v?' on':'');
+      b.textContent=v.toUpperCase();
+      b.addEventListener('click',()=>{TS.truckCargoType=v;tg0.querySelectorAll('.tgo').forEach(x=>x.classList.toggle('on',x===b));renderTrain();});
+      tg0.appendChild(b);
+    });
+    r0.appendChild(l0); r0.appendChild(tg0); s1.appendChild(r0);
+
+    const r2=document.createElement('div'); r2.className='srow';
+    const l2=document.createElement('span'); l2.className='slbl'; l2.textContent='ROUND TRIP (min)';
+    const i2=document.createElement('input'); i2.type='number'; i2.className='fi fi-w80'; i2.value=TS.truckFreqMin; i2.min=0.5; i2.step=0.5;
+    i2.addEventListener('change',e=>{TS.truckFreqMin=Math.max(0.5,parseFloat(e.target.value)||3);renderTrain();});
+    r2.appendChild(l2); r2.appendChild(i2); s1.appendChild(r2);
+
+    const note=document.createElement('div');
+    note.style.cssText='font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:6px;line-height:1.5;';
+    note.textContent='Fluid Truck capacity 2,000 m³ per vehicle (v1.2). Road network required. Round trip time depends on route length — measure in-game.';
+    s1.appendChild(note);
+  }
+
+  // ── DRONE CONFIG
+  if(TS.vehicle==='drone'){
+    const s1=ps_sec(lp,'Drone Config');
+
+    const r1=document.createElement('div'); r1.className='srow';
+    const l1=document.createElement('span'); l1.className='slbl'; l1.textContent='ROUTE DIST (km)';
+    const i1=document.createElement('input'); i1.type='number'; i1.className='fi fi-w80'; i1.value=TS.droneDistKm; i1.min=0.1; i1.step=0.1;
+    i1.addEventListener('change',e=>{TS.droneDistKm=Math.max(0.1,parseFloat(e.target.value)||1);renderTrain();});
+    r1.appendChild(l1); r1.appendChild(i1); s1.appendChild(r1);
+
+    const r2=document.createElement('div'); r2.className='srow';
+    const l2=document.createElement('span'); l2.className='slbl'; l2.textContent='DRONES ON ROUTE';
+    const i2=document.createElement('input'); i2.type='number'; i2.className='fi fi-w80'; i2.value=TS.droneCount; i2.min=1; i2.step=1;
+    i2.addEventListener('change',e=>{TS.droneCount=Math.max(1,parseInt(e.target.value)||1);renderTrain();});
+    r2.appendChild(l2); r2.appendChild(i2); s1.appendChild(r2);
+
+    const note=document.createElement('div');
+    note.style.cssText='font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:6px;line-height:1.5;';
+    note.textContent='Drones travel ~120 km/h. Round trip = 2 × distance ÷ speed. 4 inventory slots per drone. Requires Battery fuel per trip.';
+    s1.appendChild(note);
+  }
+
+  // ── ITEM ROUTES (all vehicles)
   const s2=ps_sec(lp,'Add Item Route');
   const r4=document.createElement('div'); r4.className='row';
-  const itemSel=document.createElement('select'); itemSel.className='fi'; itemSel.style.flex='1';
-  const allItems=[...Object.keys(RAWS),...PRODUCIBLE].sort();
-  allItems.forEach(item=>{const o=document.createElement('option');o.value=item;o.textContent=item;itemSel.appendChild(o);});
-  r4.appendChild(itemSel); s2.appendChild(r4);
+  const iSel=document.createElement('select'); iSel.className='fi'; iSel.style.flex='1';
+  // Only solid items for drones (no fluid)
+  const validItems=TS.vehicle==='drone'
+    ? [...Object.keys(RAWS),...PRODUCIBLE].filter(i=>!FLUID_ITEMS.has(i)).sort()
+    : [...Object.keys(RAWS),...PRODUCIBLE].sort();
+  validItems.forEach(item=>{const o=document.createElement('option');o.value=item;o.textContent=item;iSel.appendChild(o);});
+  r4.appendChild(iSel); s2.appendChild(r4);
 
   const r5=document.createElement('div'); r5.className='row';
-  const rl=document.createElement('span'); rl.style.cssText='font-family:var(--mono);font-size:9px;color:var(--text3);';rl.textContent='RATE /MIN';
-  const rateInp=document.createElement('input'); rateInp.type='number'; rateInp.className='fi fi-w80'; rateInp.value='60'; rateInp.min=1; rateInp.step=10;
+  const rl=document.createElement('span'); rl.style.cssText='font-family:var(--mono);font-size:9px;color:var(--text3);';
+  rl.textContent='RATE /MIN';
+  const rInp=document.createElement('input'); rInp.type='number'; rInp.className='fi fi-w80'; rInp.value='60'; rInp.min=1; rInp.step=10;
   const addBtn=document.createElement('button'); addBtn.className='btn btn-add'; addBtn.textContent='+ADD';
   addBtn.addEventListener('click',()=>{
-    const item=itemSel.value; const rate=parseFloat(rateInp.value);
+    const item=iSel.value; const rate=parseFloat(rInp.value);
     if(!item||isNaN(rate)||rate<=0) return;
     TS.itemRates.push({item,rate}); buildTrainLeft(lp); renderTrain();
   });
-  r5.appendChild(rl); r5.appendChild(rateInp); r5.appendChild(addBtn); s2.appendChild(r5);
+  r5.appendChild(rl); r5.appendChild(rInp); r5.appendChild(addBtn); s2.appendChild(r5);
 
   if(TS.itemRates.length>0){
     const s3=ps_sec(lp,'Item Routes');
@@ -1567,88 +1960,131 @@ function buildTrainLeft(lp){
 
 function renderTrain(){
   const pane=document.getElementById('pane-train');
-  const capPerCar=TS.trackType==='solid'?3200:3200; // fluid: m³; solid: stacks×stacksize
-  const solidCapPerCar=32; // stacks
+  const vinfo=VEHICLES[TS.vehicle];
 
-  // Belt/pipe reference table always shown
-  const bpRows=TS.trackType==='solid'
-    ? BELT_SPEEDS.map(b=>{
-        const cargoPerTrain=solidCapPerCar*TS.carsPerTrain; // stacks
-        // throughput = cargoPerTrain stacks × defaultStackSize / freqMin
-        const throughput=cargoPerTrain*STACK_SIZE.default/TS.trainFreqMin;
-        return `<tr><td>${b.mk}</td><td>${b.rate}/min</td><td>${fmt(b.rate/60,1)}/s</td><td>${fmt(throughput/b.rate,2)} trains</td></tr>`;
-      })
-    : PIPE_SPEEDS.map(p=>{
-        const capPerTrainM3=3200*TS.carsPerTrain;
-        const throughput=capPerTrainM3/TS.trainFreqMin;
-        return `<tr><td>${p.mk}</td><td>${p.rate} m³/min</td><td>—</td><td>${fmt(throughput/p.rate,2)} trains</td></tr>`;
-      });
+  // ── Compute round-trip frequency and capacity per trip based on vehicle
+  let freqMin, capacityCalc, cargoType, vehicleLabel;
 
-  let h=`<div class="train-2col">
-    <div class="t2col-card">
-      <div class="t2-title">Train Config</div>
-      <div class="t2-row"><span class="t2-lbl">FREIGHT TYPE</span><span class="t2-val" style="color:var(--ficsit)">${TS.trackType.toUpperCase()}</span></div>
-      <div class="t2-row"><span class="t2-lbl">CARS PER TRAIN</span><span class="t2-val" style="color:var(--accent)">${TS.carsPerTrain}</span></div>
-      <div class="t2-row"><span class="t2-lbl">ROUND TRIP FREQUENCY</span><span class="t2-val" style="color:var(--green)">${TS.trainFreqMin} min</span></div>
-      <div class="t2-row"><span class="t2-lbl">CAPACITY PER TRIP</span><span class="t2-val" style="color:var(--purple)">
-        ${TS.trackType==='solid'?`${solidCapPerCar*TS.carsPerTrain} stacks`:`${3200*TS.carsPerTrain} m³`}
-      </span></div>
-      <div class="t2-row"><span class="t2-lbl">EFFECTIVE THROUGHPUT</span><span class="t2-val" style="font-size:14px;color:var(--text2)">
-        ${TS.trackType==='solid'?fmt(solidCapPerCar*TS.carsPerTrain*STACK_SIZE.default/TS.trainFreqMin,0)+' items/min (default stack)':fmt(3200*TS.carsPerTrain/TS.trainFreqMin,0)+' m³/min'}
-      </span></div>
-    </div>
-    <div class="t2col-card">
-      <div class="t2-title">${TS.trackType==='solid'?'Belt':'Pipe'} Speed Reference</div>
-      <table class="trk-tbl"><thead><tr>
-        <th>MARK</th><th>${TS.trackType==='solid'?'BELT RATE':'PIPE RATE'}</th>
-        ${TS.trackType==='solid'?'<th>PER SEC</th>':''}
-        <th>TRAINS EQUIV</th>
-      </tr></thead><tbody>
-        ${bpRows.join('')}
-      </tbody></table>
-    </div>
-  </div>`;
-
-  if(TS.itemRates.length>0){
-    h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">🚂 Car Requirements by Item</span></div><div class="train-rgrid">`;
-    TS.itemRates.forEach(ir=>{
-      const stackSz=STACK_SIZE[ir.item]||STACK_SIZE.default;
-      let carsNeeded, freq, note;
-      if(TS.trackType==='solid'){
-        // items per trip = stackSz × solidCapPerCar × carsPerTrain
-        const itemsPerTrip=stackSz*solidCapPerCar*TS.carsPerTrain;
-        // at given frequency, throughput = itemsPerTrip / freqMin
-        const throughput=itemsPerTrip/TS.trainFreqMin;
-        const trainsNeeded=ir.rate/throughput;
-        carsNeeded=Math.ceil(trainsNeeded*TS.carsPerTrain);
-        const trainsCeil=Math.ceil(trainsNeeded);
-        freq=fmt(ir.rate*TS.trainFreqMin/throughput,2);
-        note=`${fmt(trainsNeeded,2)} trains (${trainsCeil} ceil) · stack: ${stackSz}`;
+  if(TS.vehicle==='train'){
+    freqMin=TS.trainFreqMin;
+    cargoType=TS.trainCargoType;
+    vehicleLabel=`Train (${TS.carsPerTrain} car${TS.carsPerTrain>1?'s':''})`;
+    capacityCalc=(item)=>{
+      const cap=vinfo[cargoType];
+      if(cargoType==='solid'){
+        const ss=STACK_SIZE[item]||STACK_SIZE.default;
+        return cap.carCap*ss*TS.carsPerTrain; // items per trip
       } else {
-        const m3PerTrip=3200*TS.carsPerTrain;
-        const throughput=m3PerTrip/TS.trainFreqMin;
-        const trainsNeeded=ir.rate/throughput;
-        carsNeeded=Math.ceil(trainsNeeded*TS.carsPerTrain);
-        const trainsCeil=Math.ceil(trainsNeeded);
-        freq=fmt(ir.rate*TS.trainFreqMin/throughput,2);
-        note=`${fmt(trainsNeeded,2)} trains (${trainsCeil} ceil) · m³/min`;
+        return cap.carCap*TS.carsPerTrain; // m³ per trip
+      }
+    };
+  } else if(TS.vehicle==='truck'){
+    freqMin=TS.truckFreqMin;
+    cargoType=TS.truckCargoType;
+    vehicleLabel='Truck';
+    capacityCalc=(item)=>{
+      const cap=vinfo[cargoType];
+      if(cargoType==='solid'){
+        const ss=STACK_SIZE[item]||STACK_SIZE.default;
+        return cap.carCap*ss;
+      } else {
+        return cap.carCap;
+      }
+    };
+  } else { // drone
+    // Round trip time = 2 * dist / 120 km/h * 60 min/h = dist/1
+    freqMin=(2*TS.droneDistKm/120)*60;
+    cargoType='solid';
+    vehicleLabel=`Drone (${TS.droneCount} unit${TS.droneCount>1?'s':''})`;
+    capacityCalc=(item)=>{
+      const ss=STACK_SIZE[item]||STACK_SIZE.default;
+      return 4*ss*TS.droneCount; // 4 slots per drone × stack size × drone count
+    };
+  }
+
+  const effFreq=freqMin;
+
+  // ── Summary config card
+  let h=`<div class="rsec"><div class="rshdr"><span class="rs-t">${vinfo.icon} ${vinfo.name} Configuration</span></div>`;
+  h+=`<div class="train-2col">
+    <div class="t2col-card">
+      <div class="t2-title">${vehicleLabel}</div>`;
+
+  if(TS.vehicle==='train'){
+    const capSolid=vinfo.solid.carCap*STACK_SIZE.default*TS.carsPerTrain;
+    const capFluid=vinfo.fluid.carCap*TS.carsPerTrain;
+    h+=`<div class="t2-row"><span class="t2-lbl">CARGO TYPE</span><span class="t2-val" style="color:var(--ficsit);font-size:14px">${TS.trainCargoType.toUpperCase()}</span></div>
+    <div class="t2-row"><span class="t2-lbl">CARS PER TRAIN</span><span class="t2-val" style="color:var(--accent);font-size:14px">${TS.carsPerTrain}</span></div>
+    <div class="t2-row"><span class="t2-lbl">ROUND TRIP</span><span class="t2-val" style="color:var(--green);font-size:14px">${TS.trainFreqMin} min</span></div>
+    <div class="t2-row"><span class="t2-lbl">CAPACITY / TRIP</span><span class="t2-val" style="font-size:13px;color:var(--text2)">${TS.trainCargoType==='solid'?capSolid+' items (default stack)':fmt(capFluid,0)+' m³'}</span></div>`;
+  } else if(TS.vehicle==='truck'){
+    const cap=TS.truckCargoType==='solid'?vinfo.solid.carCap*STACK_SIZE.default:vinfo.fluid.carCap;
+    h+=`<div class="t2-row"><span class="t2-lbl">CARGO TYPE</span><span class="t2-val" style="color:var(--ficsit);font-size:14px">${TS.truckCargoType.toUpperCase()}</span></div>
+    <div class="t2-row"><span class="t2-lbl">ROUND TRIP</span><span class="t2-val" style="color:var(--green);font-size:14px">${TS.truckFreqMin} min</span></div>
+    <div class="t2-row"><span class="t2-lbl">CAPACITY / TRIP</span><span class="t2-val" style="font-size:13px;color:var(--text2)">${TS.truckCargoType==='solid'?cap+' items (default stack)':fmt(cap,0)+' m³'}</span></div>
+    <div class="t2-row"><span class="t2-lbl">v1.2 NOTE</span><span style="font-family:var(--mono);font-size:8px;color:var(--orange)">Fluid Truck capacity 2,000 m³</span></div>`;
+  } else {
+    h+=`<div class="t2-row"><span class="t2-lbl">ROUTE DISTANCE</span><span class="t2-val" style="color:var(--ficsit);font-size:14px">${TS.droneDistKm} km</span></div>
+    <div class="t2-row"><span class="t2-lbl">DRONES ON ROUTE</span><span class="t2-val" style="color:var(--accent);font-size:14px">${TS.droneCount}</span></div>
+    <div class="t2-row"><span class="t2-lbl">ROUND TRIP TIME</span><span class="t2-val" style="color:var(--green);font-size:14px">${fmt(freqMin,2)} min</span></div>
+    <div class="t2-row"><span class="t2-lbl">SLOTS / TRIP</span><span class="t2-val" style="font-size:13px;color:var(--text2)">${4*TS.droneCount} slots total (4 per drone)</span></div>`;
+  }
+  h+=`</div>`;
+
+  // ── Belt/Pipe reference
+  h+=`<div class="t2col-card"><div class="t2-title">Conveyor / Pipe Reference</div>
+    <table class="trk-tbl"><thead><tr><th>TYPE</th><th>MARK</th><th>CAPACITY</th><th>EQUIV THROUGHPUT</th></tr></thead><tbody>`;
+  BELT_MK.forEach(b=>{
+    const tripCap=TS.vehicle==='train'?vinfo.solid.carCap*STACK_SIZE.default*TS.carsPerTrain:TS.vehicle==='truck'?vinfo.solid.carCap*STACK_SIZE.default:4*STACK_SIZE.default*TS.droneCount;
+    const throughput=tripCap/effFreq;
+    h+=`<tr><td style="color:var(--text3)">Belt</td><td>${b.mk}</td><td>${b.rate}/min</td><td>${fmt(throughput/b.rate,2)} ${TS.vehicle}s</td></tr>`;
+  });
+  if(TS.vehicle!=='drone'){
+    PIPE_MK.forEach(p=>{
+      const tripCap=TS.vehicle==='train'?vinfo.fluid.carCap*TS.carsPerTrain:vinfo.fluid.carCap;
+      const throughput=tripCap/effFreq;
+      h+=`<tr><td style="color:var(--text3)">Pipe</td><td>${p.mk}</td><td>${p.rate} m³/min</td><td>${fmt(throughput/p.rate,2)} ${TS.vehicle}s</td></tr>`;
+    });
+  }
+  h+=`</tbody></table></div></div></div>`;
+
+  // ── Item route results
+  if(TS.itemRates.length>0){
+    h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">${vinfo.icon} Route Requirements by Item</span></div><div class="train-rgrid">`;
+    TS.itemRates.forEach(ir=>{
+      const capPerTrip=capacityCalc(ir.item);
+      const throughput=capPerTrip/effFreq; // items (or m³) per min per vehicle
+      const vehiclesNeeded=ir.rate/throughput;
+      const vehiclesCeil=Math.ceil(vehiclesNeeded);
+      const ss=STACK_SIZE[ir.item]||STACK_SIZE.default;
+      let detail='';
+      if(TS.vehicle==='drone'){
+        const slotsNeeded=vehiclesCeil*4;
+        const battsPerTrip=Math.ceil(effFreq/2); // rough: ~1 battery per 2 min flight
+        detail=`${vehiclesCeil} drone${vehiclesCeil>1?'s':''} · ${slotsNeeded} slots · stack: ${ss}<br>~${battsPerTrip} batteries/trip/drone`;
+      } else if(cargoType==='fluid'){
+        detail=`${fmt(vehiclesNeeded,2)} exact · ${vehiclesCeil} ceil · m³/min`;
+      } else {
+        detail=`${fmt(vehiclesNeeded,2)} exact · ${vehiclesCeil} ceil · stack: ${ss}`;
       }
       h+=`<div class="trcard" style="--tc:var(--ficsit)">
         <div class="trc-item">${ir.item}</div>
         <div class="trc-rate">${fmt(ir.rate,1)} /min</div>
-        <div class="trc-cars">${carsNeeded}<span class="trc-cl"> CARS TOTAL</span></div>
-        <div class="trc-freq">${note}</div>
+        <div class="trc-cars">${vehiclesCeil}<span class="trc-cl"> ${TS.vehicle.toUpperCase()}${vehiclesCeil>1?'S':''}</span></div>
+        <div class="trc-freq">${detail}</div>
       </div>`;
     });
     h+=`</div></div>`;
   }
 
-  // Quick reference: car capacities
-  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">📦 Car Capacity Reference</span></div>
-  <table class="trk-tbl"><thead><tr><th>CAR TYPE</th><th>CAPACITY</th><th>NOTES</th></tr></thead><tbody>
-    <tr><td>Freight Car (solid)</td><td>32 stacks</td><td>Stack size varies per item — screws: 200, motors: 50, etc.</td></tr>
-    <tr><td>Fluid Freight Car</td><td>3,200 m³</td><td>Pipes connect directly to fluid freight.</td></tr>
-    <tr><td>Locomotive</td><td>—</td><td>1–3 per train. Each adds weight capacity and speed on long routes.</td></tr>
+  // ── Capacity reference table
+  h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">📦 Vehicle Capacity Reference</span></div>
+  <table class="trk-tbl"><thead><tr><th>VEHICLE</th><th>TYPE</th><th>CAPACITY</th><th>NOTES</th></tr></thead><tbody>
+    <tr><td>Freight Car</td><td>Solid</td><td>32 stacks</td><td>Stack size varies per item</td></tr>
+    <tr><td>Fluid Freight Car</td><td>Fluid</td><td>3,200 m³</td><td>Pipes connect directly</td></tr>
+    <tr><td>Truck</td><td>Solid</td><td>32 stacks</td><td>Road network required</td></tr>
+    <tr><td style="color:var(--orange)">Fluid Truck (v1.2)</td><td>Fluid</td><td style="color:var(--orange)">2,000 m³</td><td style="color:var(--orange)">New in v1.2 · road network required</td></tr>
+    <tr><td>Drone</td><td>Solid only</td><td>4 slots</td><td>Stack size × 4 items per trip · batteries consumed</td></tr>
   </tbody></table></div>`;
 
   pane.innerHTML=h;
@@ -1845,6 +2281,62 @@ function renderPower(){
   pane.innerHTML=h;
 }
 
+
+// ══════════════════════════════════════════════════════════════
+//  URL STATE — encode full app state into hash, restore on load
+// ══════════════════════════════════════════════════════════════
+function encodeState(){
+  const s={
+    tab: activeTab,
+    targets: PS.targets,
+    alts: PS.altSelections,
+    milestone: PS.activeMilestone,
+    gm: { recipe:GM.recipe, power:GM.power },
+    ps: { machineMode:PS.machineMode, groupBy:PS.groupBy, showClock:PS.showClock, showPower:PS.showPower },
+    rs: { search:RS.search, layerFilter:RS.layerFilter, machineFilter:RS.machineFilter, altOnly:RS.altOnly, scale:RS.scale },
+    ts: { itemRates:TS.itemRates, trainFreqMin:TS.trainFreqMin, carsPerTrain:TS.carsPerTrain, trackType:TS.trackType },
+    ws: { loads:WS.loads, targetMW:WS.targetMW },
+  };
+  try{ return btoa(unescape(encodeURIComponent(JSON.stringify(s)))); }
+  catch(e){ return ''; }
+}
+
+function decodeState(hash){
+  try{
+    const s=JSON.parse(decodeURIComponent(escape(atob(hash))));
+    if(s.tab) activeTab=s.tab;
+    if(s.targets) PS.targets=s.targets;
+    if(s.alts) PS.altSelections=s.alts;
+    if(s.milestone) PS.activeMilestone=s.milestone;
+    if(s.gm){ GM.recipe=s.gm.recipe||1; GM.power=s.gm.power||1; }
+    if(s.ps){ Object.assign(PS,{machineMode:s.ps.machineMode,groupBy:s.ps.groupBy,showClock:s.ps.showClock,showPower:s.ps.showPower}); }
+    if(s.rs){ Object.assign(RS,{search:s.rs.search||'',layerFilter:s.rs.layerFilter||'all',machineFilter:s.rs.machineFilter||'all',altOnly:!!s.rs.altOnly,scale:s.rs.scale||1}); }
+    if(s.ts){ Object.assign(TS,s.ts); }
+    if(s.ws){ Object.assign(WS,s.ws); }
+    return true;
+  } catch(e){ return false; }
+}
+
+function pushState(){
+  const enc=encodeState();
+  if(enc) history.replaceState(null,'','#'+enc);
+}
+
+function shareURL(){
+  pushState();
+  const url=window.location.href;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=document.getElementById('shareCopyBtn');
+    if(!btn) return;
+    btn.textContent='✓ COPIED'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='COPY LINK'; btn.classList.remove('copied'); },2000);
+  }).catch(()=>{
+    // fallback: select the text field
+    const field=document.getElementById('shareUrlField');
+    if(field){ field.select(); document.execCommand('copy'); }
+  });
+}
+
 // ══════════════════════════════════════════════════════════════
 //  SHARED UTILS
 // ══════════════════════════════════════════════════════════════
@@ -1856,8 +2348,14 @@ function showWaiting(paneId,icon,title,sub){
 // ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
+// Restore state from URL hash if present
+const _hash=window.location.hash.slice(1);
+if(_hash){ try{ decodeState(_hash); }catch(e){} }
+
 renderLeftPanel();
-showWaiting('pane-planner','⚙','Awaiting Targets','Select a milestone or add custom targets, then hit CALCULATE.');
+updateGmBadge();
+if(PS.targets.length>0){ renderPlannerRight(); }
+else{ showWaiting('pane-planner','⚙','Awaiting Targets','Select a milestone or add custom targets, then hit CALCULATE.'); }
 renderReference();
 renderTrain();
 renderPower();
