@@ -81,8 +81,10 @@ The Planner left panel includes a **Game Mode** section with the two multipliers
 
 | Multiplier | Effect in tool | Options |
 |---|---|---|
-| Recipe Cost | Scales all recipe input rates in the resolver | ×0.25 / ×0.5 / ×0.75 / ×1 / ×1.25 / ×1.5 / ×1.75 / ×2 |
+| Recipe Cost | Scales raw resource consumption in results | ×0.25 / ×0.5 / ×0.75 / ×1 / ×1.25 / ×1.5 / ×1.75 / ×2 |
 | Power Consumption | Scales all machine MW figures | ×0.25 / ×0.5 / ×0.75 / ×1 / ×2 / ×5 |
+
+The Recipe Cost multiplier is applied at the display layer, not inside the resolver. Machine counts and output rates are determined by vanilla recipe ratios and don't change with recipe cost — what changes is how much raw material each machine consumes. At ×1.75, the raw resource section shows the vanilla rate struck through with the multiplied rate in amber. World node supply percentages and miner counts are always calculated against vanilla demand, so the comparison stays meaningful regardless of what multiplier is active.
 
 Non-default values are highlighted in amber throughout the results. A header badge shows which multipliers are active at a glance.
 
@@ -194,6 +196,8 @@ All recipe data lives in a single clearly-marked block near the top of the JavaS
 ## Known limitations
 
 - **Logistics tab — round trip frequency**: the tool cannot calculate travel time from track distance or road topology. Measure your actual round trip in-game and enter it manually. For drones, the tool estimates from distance at 120 km/h which is approximate.
+
+- **Game Mode — Recipe Cost**: machine counts, clock percentages, and output rates are shown at vanilla values regardless of the recipe cost multiplier, because those figures are determined by output rate not input cost. Only the raw resource section reflects the multiplied consumption. This is intentional — the resolver is pure vanilla maths and the multiplier is applied at display time only.
 
 - **Recycled loops**: the Plastic/Rubber recycling loop (Recycled Plastic + Recycled Rubber alt recipes) creates a circular dependency. The resolver breaks the cycle using visited sets, which means Fuel is treated as a raw input rather than a produced item when those alts are active. Plan the loop ratios manually using the Reference tab. This is a known architectural limitation documented intentionally rather than papered over.
 

@@ -334,6 +334,28 @@ footer{border-top:1px solid var(--border);padding:10px 22px;font-family:var(--mo
 @media(max-width:1060px){:root{--lw:340px;}.scards{grid-template-columns:1fr 1fr;}.train-2col{grid-template-columns:1fr;}}
 @media(max-width:700px){.body-row{grid-template-columns:1fr;}.left-panel{height:auto;position:static;}}
 
+/* DELIVERY TIME */
+.dlv-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:5px; }
+.dlv-card { background:var(--bg2); border:1px solid var(--border); padding:10px 12px; position:relative; overflow:hidden; }
+.dlv-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--dc,var(--teal)); }
+.dlv-item { font-family:var(--mono); font-size:9px; color:var(--text2); margin-bottom:2px; }
+.dlv-qty  { font-family:var(--mono); font-size:9px; color:var(--text3); margin-bottom:5px; }
+.dlv-time { font-family:var(--cond); font-size:22px; font-weight:900; color:var(--dc,var(--teal)); line-height:1; }
+.dlv-unit { font-family:var(--mono); font-size:8px; color:var(--text3); }
+.dlv-phase-ttl { font-family:var(--mono); font-size:9px; color:var(--text3); margin-top:4px; }
+.dlv-unresolvable { font-family:var(--mono); font-size:8px; color:var(--orange); margin-top:3px; }
+.dlv-bottleneck { border-color:var(--ficsit); }
+.dlv-bottleneck::before { background:var(--ficsit); }
+.dlv-rate-row { display:flex; align-items:center; gap:5px; margin:5px 0 4px; }
+.dlv-rate-input {
+  background:var(--bg3); border:1px solid var(--border2); color:var(--text);
+  font-family:var(--mono); font-size:11px; padding:3px 7px; outline:none;
+  width:75px; text-align:right; transition:border-color .2s;
+}
+.dlv-rate-input:focus { border-color:var(--ficsit); }
+.dlv-rate-input::placeholder { color:var(--text3); font-size:10px; }
+.dlv-rate-unit { font-family:var(--mono); font-size:9px; color:var(--text3); }
+
 /* GAME MODE MULTIPLIERS */
 .gm-section { display:flex; flex-direction:column; gap:6px; }
 .gm-row { display:flex; align-items:center; gap:7px; }
@@ -937,6 +959,38 @@ const RECIPE_DB = {
     loopNote:'DMR output loops back.', tags:['loop'] },
 ],
 
+// ─── NUCLEAR PASTA CHAIN ─────────────────────────────────────
+'Copper Powder':[
+  { label:'Copper Powder', machine:'Constructor', mw:4, icon:'🟤', layer:'L1',
+    out:[{item:'Copper Powder',rate:5}], in:[{item:'Copper Ingot',rate:30}],
+    altNote:'Used exclusively for Nuclear Pasta production.' },
+],
+'Pressure Conversion Cube':[
+  { label:'Pressure Conversion Cube', machine:'Assembler', mw:15, icon:'⬛', layer:'L4',
+    out:[{item:'Pressure Conversion Cube',rate:1}],
+    in:[{item:'Fused Modular Frame',rate:1},{item:'Radio Control Unit',rate:2}] },
+],
+'Nuclear Pasta':[
+  { label:'Nuclear Pasta', machine:'Particle Accelerator', mw:1000, icon:'🍝', layer:'L4',
+    out:[{item:'Nuclear Pasta',rate:0.5}],
+    in:[{item:'Copper Powder',rate:100},{item:'Pressure Conversion Cube',rate:0.5}],
+    altNote:'Power draw fluctuates 500–1,500 MW (avg 1,000 MW). Use Power Storage buffers — 5 per PA recommended. Project Assembly Part: required for Phase 4 (100) and Phase 5 (1,000).' },
+],
+
+// ─── BALLISTIC WARP DRIVE CHAIN ───────────────────────────────
+'Singularity Cell':[
+  { label:'Singularity Cell', machine:'Manufacturer', mw:55, icon:'🔮', layer:'L5',
+    out:[{item:'Singularity Cell',rate:10}],
+    in:[{item:'Nuclear Pasta',rate:1},{item:'Dark Matter Crystal',rate:20},{item:'Iron Plate',rate:100},{item:'Concrete',rate:200}],
+    altNote:'Produced in Manufacturer (low power for a Phase 5 item — 55 MW). Also used to power Portals (2/min per portal).' },
+],
+'Ballistic Warp Drive':[
+  { label:'Ballistic Warp Drive', machine:'Manufacturer', mw:55, icon:'🚀', layer:'L5',
+    out:[{item:'Ballistic Warp Drive',rate:1}],
+    in:[{item:'Thermal Propulsion Rocket',rate:1},{item:'Singularity Cell',rate:5},{item:'Superposition Oscillator',rate:2},{item:'Dark Matter Crystal',rate:40}],
+    altNote:'Most complex item in the game by AWESOME Sink value (2,895,334 points). Required for Phase 5 delivery (200 units). Thermal Propulsion Rocket is a Phase 4 carryover — run that production line in parallel.' },
+],
+
 }; // end RECIPE_DB
 
 // ── MACHINE POWER (MW at 100% clock speed)
@@ -947,19 +1001,49 @@ const MACHINE_POWER = {
 };
 
 // ── MILESTONES
+// delivery: Space Elevator quantities required for that phase (vanilla).
+// Scaled by GM.spaceElevator at display time (not in resolver).
+// Items not in RECIPE_DB (Nuclear Pasta, Ballistic Warp Drive) are flagged but not resolved.
 const MILESTONES = [
-  { id:'p1',  label:'Phase 1', sub:'Tier 0–2', color:'#78b055',
-    targets:[{item:'Smart Plating',rate:10},{item:'Versatile Framework',rate:10},{item:'Automated Wiring',rate:10}] },
-  { id:'p2',  label:'Phase 2', sub:'Tier 3–4', color:'#5296e0',
-    targets:[{item:'Modular Frame',rate:10},{item:'Stator',rate:10},{item:'Rotor',rate:10},{item:'Motor',rate:5}] },
-  { id:'p3',  label:'Phase 3', sub:'Tier 5–7', color:'#f5a623',
-    targets:[{item:'Versatile Framework',rate:5},{item:'Modular Engine',rate:10},{item:'Adaptive Control Unit',rate:5}] },
-  { id:'p4',  label:'Phase 4', sub:'Tier 7–8', color:'#4ecdc4',
-    targets:[{item:'Assembly Director System',rate:2},{item:'Magnetic Field Generator',rate:2},{item:'Thermal Propulsion Rocket',rate:2},{item:'Turbo Motor',rate:5}] },
+  { id:'p1', label:'Phase 1', sub:'Tier 0–2', color:'#78b055',
+    targets:[{item:'Smart Plating',rate:10}],
+    delivery:[
+      {item:'Smart Plating',qty:50},
+    ]},
+  { id:'p2', label:'Phase 2', sub:'Tier 3–4', color:'#5296e0',
+    targets:[{item:'Smart Plating',rate:5},{item:'Versatile Framework',rate:5},{item:'Automated Wiring',rate:2}],
+    delivery:[
+      {item:'Smart Plating',qty:500},
+      {item:'Versatile Framework',qty:500},
+      {item:'Automated Wiring',qty:100},
+    ]},
+  { id:'p3', label:'Phase 3', sub:'Tier 5–7', color:'#f5a623',
+    targets:[{item:'Versatile Framework',rate:5},{item:'Modular Engine',rate:5},{item:'Adaptive Control Unit',rate:2}],
+    delivery:[
+      {item:'Versatile Framework',qty:2500},
+      {item:'Modular Engine',qty:500},
+      {item:'Adaptive Control Unit',qty:100},
+    ]},
+  { id:'p4', label:'Phase 4', sub:'Tier 7–8', color:'#4ecdc4',
+    targets:[{item:'Assembly Director System',rate:2},{item:'Magnetic Field Generator',rate:2},{item:'Thermal Propulsion Rocket',rate:2}],
+    delivery:[
+      {item:'Assembly Director System',qty:500},
+      {item:'Magnetic Field Generator',qty:500},
+      {item:'Thermal Propulsion Rocket',qty:250},
+      {item:'Nuclear Pasta',qty:100},
+    ]},
   { id:'p5c', label:'Phase 5 Core', sub:'NQP + AES', color:'#e05252',
-    targets:[{item:'Neural-Quantum Processor',rate:3},{item:'AI Expansion Server',rate:1.5},{item:'Superposition Oscillator',rate:5}] },
-  { id:'p5f', label:'Phase 5 Full', sub:'All P5 Parts', color:'#b06cff',
-    targets:[{item:'Neural-Quantum Processor',rate:6},{item:'AI Expansion Server',rate:3},{item:'Superposition Oscillator',rate:10},{item:'Biochemical Sculptor',rate:1.5}] },
+    targets:[{item:'Neural-Quantum Processor',rate:3},{item:'AI Expansion Server',rate:1.5},{item:'Superposition Oscillator',rate:5}],
+    // No delivery block — P5C is a planning preset, not a phase preset
+  },
+  { id:'p5f', label:'Phase 5 Full', sub:'Phase 5 Delivery', color:'#b06cff',
+    targets:[{item:'Neural-Quantum Processor',rate:6},{item:'AI Expansion Server',rate:3},{item:'Superposition Oscillator',rate:10},{item:'Biochemical Sculptor',rate:1.5}],
+    delivery:[
+      {item:'AI Expansion Server',qty:256},
+      {item:'Biochemical Sculptor',qty:1000},
+      {item:'Nuclear Pasta',qty:1000},
+      {item:'Ballistic Warp Drive',qty:200},
+    ]},
 ];
 
 // ── LAYER METADATA
@@ -1009,7 +1093,7 @@ const STACK_SIZE = {
   'Turbo Motor':50,'Assembly Director System':50,'Thermal Propulsion Rocket':50,
   'Reanimated SAM':100,'Dark Matter Crystal':100,'Ficsite Trigon':100,
   'Ficsite Ingot':100,'Superposition Oscillator':50,'Neural-Quantum Processor':50,
-  'AI Expansion Server':50,'Biochemical Sculptor':50,
+  'AI Expansion Server':50,'Biochemical Sculptor':50,'Copper Powder':100,'Pressure Conversion Cube':50,'Nuclear Pasta':50,'Singularity Cell':200,'Ballistic Warp Drive':50,
 };
 
 // ── GENERATOR DATA for Power tab
@@ -1138,14 +1222,15 @@ function activeAltCount(){ return Object.values(PS.altSelections).filter(v=>v>0)
 function updateGmBadge(){
   const b=document.getElementById('gmBadge');
   if(!b) return;
-  const active=GM.recipe!==1||GM.power!==1;
+  const active=GM.recipe!==1||GM.power!==1||GM.spaceElevator!==1;
   if(!active){
     b.textContent='VANILLA MODE'; b.style.color='var(--text3)';
     b.style.borderColor='rgba(61,90,112,.4)'; b.style.background='transparent';
   } else {
     const parts=[];
-    if(GM.recipe!==1) parts.push(`RCP ×${GM.recipe}`);
-    if(GM.power!==1)  parts.push(`PWR ×${GM.power}`);
+    if(GM.recipe!==1)        parts.push(`RCP ×${GM.recipe}`);
+    if(GM.power!==1)         parts.push(`PWR ×${GM.power}`);
+    if(GM.spaceElevator!==1) parts.push(`SE ×${GM.spaceElevator}`);
     b.textContent=parts.join(' · ');
     b.style.color='var(--orange)'; b.style.borderColor='rgba(255,140,66,.45)';
     b.style.background='rgba(255,140,66,.08)';
@@ -1207,12 +1292,13 @@ const VEHICLES = {
 const WS = { loads:[], targetMW:0 };
 // Game Mode multipliers (v1.2). 1 = default/vanilla.
 const GM = {
-  recipe:    1,    // Recipe Parts Cost Multiplier — scales all recipe INPUT rates
-  power:     1,    // Power Consumption Multiplier — scales all machine MW draw
-  // Space Elevator multiplier intentionally omitted (user adjusts targets manually)
+  recipe:        1,  // Recipe Parts Cost — scales raw resource consumption (display only)
+  power:         1,  // Power Consumption — scales all machine MW draw
+  spaceElevator: 1,  // Space Elevator Deliverable Cost — scales delivery quantities in presets
 };
 const GM_RECIPE_OPTS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 const GM_POWER_OPTS  = [0.25, 0.5, 0.75, 1, 2, 5];
+const GM_ELEVATOR_OPTS = [0.25, 0.5, 0.75, 1, 2, 5, 10, 25, 50, 100];
 
 // ══════════════════════════════════════════════════════════════
 //  RESOLVER
@@ -1226,7 +1312,7 @@ function resolve(targets){
     if(isRaw(item)) return;
     const r=getActiveRecipe(item); if(!r) return;
     const po=r.out.find(o=>o.item===item); if(!po) return;
-    r.in.forEach(i=>req1(i.item, i.rate*GM.recipe*(rate/po.rate)));
+    r.in.forEach(i=>req1(i.item, i.rate*(rate/po.rate)));
   }
   targets.forEach(t=>req1(t.item,t.rate));
 
@@ -1240,7 +1326,7 @@ function resolve(targets){
     const po=r.out.find(o=>o.item===item); if(!po) return;
     const totalNeeded=needed[item]||rate; // fallback to current rate if not in pass1
     const m=totalNeeded/po.rate;
-    r.in.forEach(i=>req2(i.item,i.rate*GM.recipe*m));
+    r.in.forEach(i=>req2(i.item,i.rate*m));
   }
   targets.forEach(t=>req2(t.item,t.rate));
 
@@ -1335,12 +1421,13 @@ function buildPlannerLeft(lp){
     r.appendChild(l); r.appendChild(s); gmDiv.appendChild(r);
   }
 
-  buildGmRow('RECIPE COST',    GM_RECIPE_OPTS, 'recipe');
-  buildGmRow('POWER DRAW',     GM_POWER_OPTS,  'power');
+  buildGmRow('RECIPE COST',    GM_RECIPE_OPTS,   'recipe');
+  buildGmRow('POWER DRAW',     GM_POWER_OPTS,    'power');
+  buildGmRow('SE DELIVERABLES',GM_ELEVATOR_OPTS, 'spaceElevator');
 
   const gmResetRow=document.createElement('div'); gmResetRow.style.cssText='display:flex;justify-content:flex-end;margin-top:2px;';
   const gmRst=document.createElement('button'); gmRst.className='gm-reset'; gmRst.textContent='RESET TO VANILLA';
-  gmRst.addEventListener('click',()=>{GM.recipe=1;GM.power=1;updateGmBadge();buildPlannerLeft(lp);if(PS.lastResult)renderPlannerRight();});
+  gmRst.addEventListener('click',()=>{GM.recipe=1;GM.power=1;GM.spaceElevator=1;updateGmBadge();buildPlannerLeft(lp);if(PS.lastResult)renderPlannerRight();});
   gmResetRow.appendChild(gmRst); gmDiv.appendChild(gmResetRow);
 
   // Custom targets
@@ -1534,6 +1621,72 @@ function renderPlannerRight(){
     ${PS.targets.map(t=>{const ico=RECIPE_DB[t.item]?.[0]?.icon||'📦';return `<div class="rcard mid"><div class="rc-ico">${ico}</div><div class="rc-inf"><div class="rc-nm">${t.item}</div><div class="rc-rt">${fmt(t.rate,2)}</div><div class="rc-u">per minute</div></div></div>`;}).join('')}
   </div></div>`;
 
+  // Delivery Time — only shown when active milestone has delivery quantities
+  const activeMilestone = MILESTONES.find(m=>m.id===PS.activeMilestone);
+  if(activeMilestone?.delivery?.length){
+    const dlv=activeMilestone.delivery;
+    const seMultiplier=GM.spaceElevator||1;
+
+    // For each deliverable, compute time = scaled_qty / current_rate
+    const dlvResults=dlv.map(d=>{
+      const scaledQty=Math.round(d.qty*seMultiplier);
+      if(d.unresolvable){
+        return {item:d.item,qty:scaledQty,hrs:null,unresolvable:true};
+      }
+      const target=PS.targets.find(t=>t.item===d.item);
+      const rate=target?target.rate:0;
+      const hrs=rate>0?(scaledQty/rate)/60:null;
+      return {item:d.item,qty:scaledQty,rate,hrs};
+    });
+
+    const resolvedTimes=dlvResults.filter(d=>d.hrs!==null).map(d=>d.hrs);
+    const bottleneckHrs=resolvedTimes.length?Math.max(...resolvedTimes):null;
+
+    const fmtTime=(hrs)=>{
+      if(hrs===null) return {val:'—',unit:'no rate set'};
+      if(hrs<1) return {val:fmt(hrs*60,0),unit:'minutes'};
+      if(hrs<24) return {val:fmt(hrs,1),unit:'hours'};
+      return {val:fmt(hrs/24,1),unit:'days'};
+    };
+
+    h+=`<div class="rsec"><div class="rshdr">
+      <span class="rs-t">🛗 Space Elevator Delivery — ${activeMilestone.label}</span>
+      ${seMultiplier!==1?`<span style="font-family:var(--mono);font-size:8px;color:var(--orange)">×${seMultiplier} DELIVERABLE MULTIPLIER</span>`:''}
+      ${bottleneckHrs!==null?`<span class="rs-c">PHASE COMPLETE IN ~${fmtTime(bottleneckHrs).val} ${fmtTime(bottleneckHrs).unit}</span>`:''}
+    </div><div class="dlv-grid">`;
+
+    dlvResults.forEach(d=>{
+      const {val,unit}=fmtTime(d.hrs);
+      const isBottleneck=d.hrs!==null&&d.hrs===bottleneckHrs;
+      const timeColor=isBottleneck?'var(--ficsit)':'var(--teal)';
+      const cardId=`dlv-${d.item.replace(/[^a-z0-9]/gi,'-').toLowerCase()}`;
+      h+=`<div class="dlv-card ${isBottleneck?'dlv-bottleneck':''}" style="--dc:${timeColor}" id="${cardId}">
+        <div class="dlv-item">${RECIPE_DB[d.item]?.[0]?.icon||'📦'} ${d.item}</div>
+        <div class="dlv-qty">${d.qty.toLocaleString()} required${seMultiplier!==1?` (vanilla: ${Math.round(d.qty/seMultiplier)})`:''}`;
+      if(d.unresolvable){
+        h+=`</div><div class="dlv-unresolvable">⚠ Not in recipe DB — plan manually</div>`;
+      } else {
+        // Editable rate — shows current rate or a placeholder, updates target on change
+        const rateVal=d.rate||'';
+        h+=`</div>
+        <div class="dlv-rate-row">
+          <input type="number" class="dlv-rate-input" data-item="${d.item}"
+            value="${rateVal}" placeholder="rate/min" min="0.1" step="0.5"
+            title="Edit production rate — updates targets and recalculates">
+          <span class="dlv-rate-unit">/min</span>
+        </div>
+        <div class="dlv-time" id="${cardId}-time">${d.rate?val:'—'}</div>
+        <div class="dlv-unit">${d.rate?unit+(isBottleneck?' · ⚠ BOTTLENECK':''):'set a rate above'}</div>`;
+      }
+      h+=`</div>`;
+    });
+    h+=`</div></div>`;
+
+    // Attach live editing — after innerHTML is set, wire up the inputs
+    // We use a small deferred setup via a data attribute the pane reads after render
+    // (actual event wiring happens in attachDeliveryListeners called after pane.innerHTML=h)
+  }
+
   // Machines
   h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⚙ Factory Requirements</span><span class="rs-c">${Object.keys(machines).length} TYPES · ${totalCl} BUILDINGS</span></div>`;
 
@@ -1591,22 +1744,23 @@ function renderPlannerRight(){
       const ico=RAWS[item]?.icon||'⛏';
 
       // Rate display — strike base, show multiplied in amber if recipe cost is active
-      const baseRate=rate/GM.recipe;
+      // rate from resolver is vanilla. GM.recipe applied here for display only.
+      const displayRate=rate*GM.recipe;
       const rateHtml=gmMltActive
-        ?`<span class="mlt-base">${fmt(baseRate,1)}</span><span class="mlt-val">${fmt(rate,1)}</span>`
+        ?`<span class="mlt-base">${fmt(rate,1)}</span><span class="mlt-val">${fmt(displayRate,1)}</span>`
         :`${fmt(rate,1)}`;
 
       // Miner count: use base rate (what vanilla nodes must supply) ÷ Mk.3 normal node rate (60/min)
       // Normal node is the median realistic node — gives a practical "mining outpost" count
       // Use base rate so the count reflects vanilla node planning, not the recipe multiplier
-      const normalNodeRate=item==='Crude Oil'?60:60; // Mk.3 normal node: 60/min solid, 60/min oil
-      const minerCount=noExtractor?null:Math.ceil(baseRate/normalNodeRate*10)/10;
+      const normalNodeRate=60; // Mk.3 normal node: 60/min
+      const minerCount=noExtractor?null:Math.ceil(rate/normalNodeRate*10)/10;
 
       // World supply: compare base rate against vanilla world max
       // Comparing multiplied rate would give misleading "over 100%" figures on recipe cost >1
       const maxW=worldMaxRate(item);
       const nodeTotal=worldNodeTotal(item);
-      const supplyPct=maxW?(baseRate/maxW*100):null;
+      const supplyPct=maxW?(rate/maxW*100):null;
 
       let nodeHtml='';
       if(supplyPct!==null){
@@ -1620,7 +1774,7 @@ function renderPlannerRight(){
         // Suppress the overflow warning if recipe cost multiplier is causing it
         // (player can still complete — just takes longer at lower rate)
         const gmOverMsg=isOver&&gmMltActive
-          ? `<div class="node-pct" style="color:var(--orange);margin-top:2px;">Rate reflects ×${GM.recipe} recipe cost. At vanilla cost this would use ${fmt(supplyPct/GM.recipe,1)}% of world supply.</div>`
+          ? `<div class="node-pct" style="color:var(--orange);margin-top:2px;">Displaying ×${GM.recipe} recipe cost. Vanilla rate (${fmt(rate,1)}/min) uses ${fmt(supplyPct,1)}% of world supply.</div>`
           : overMsg;
         nodeHtml=`
           <div class="node-bar-wrap"><div class="node-bar-fill node-${status}" style="width:${barPct.toFixed(1)}%"></div></div>
@@ -1657,6 +1811,31 @@ function renderPlannerRight(){
   }
 
   pane.innerHTML=h;
+  attachDeliveryListeners(pane);
+}
+
+function attachDeliveryListeners(pane){
+  pane.querySelectorAll('.dlv-rate-input').forEach(inp=>{
+    inp.addEventListener('change',e=>{
+      const item=e.target.dataset.item;
+      const rate=parseFloat(e.target.value);
+      if(!item) return;
+      if(isNaN(rate)||rate<=0){
+        // Remove from targets if cleared
+        PS.targets=PS.targets.filter(t=>t.item!==item);
+      } else {
+        const ex=PS.targets.find(t=>t.item===item);
+        if(ex) ex.rate=rate;
+        else PS.targets.push({item,rate});
+      }
+      PS.activeMilestone=PS.activeMilestone; // keep milestone active
+      renderPlannerRight();
+      // Rebuild left panel to reflect updated target list
+      buildPlannerLeft(document.getElementById('leftPanel'));
+    });
+    // Also update on Enter key
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter') e.target.blur();});
+  });
 }
 
 function buildAltPanel_refresh(){
