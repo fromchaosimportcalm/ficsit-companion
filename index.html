@@ -469,6 +469,7 @@ footer{border-top:1px solid var(--border);padding:10px 22px;font-family:var(--mo
 
 // ── RAWS: items with no recipe (extraction roots)
 const RAWS = {
+  // True extraction roots — miners, extractors, wells only
   'Iron Ore':          { icon:'⛏', note:'Miner. Impure×30 / Normal×60 / Pure×120 at Mk.3' },
   'Copper Ore':        { icon:'⛏', note:'Miner.' },
   'Coal':              { icon:'⛏', note:'Miner.' },
@@ -482,11 +483,14 @@ const RAWS = {
   'Water':             { icon:'💧', note:'Water Extractor — unlimited placement.' },
   'Crude Oil':         { icon:'🛢', note:'Oil Extractor. Normal×60 / Pure×120 at Mk.2.' },
   'Nitrogen Gas':      { icon:'🌫', note:'Resource Well Pressurizer + Extractors.' },
-  'Heavy Oil Residue': { icon:'⬛', note:'Byproduct. Best consumed by Diluted Fuel (Blender).' },
-  'Polymer Resin':     { icon:'🟤', note:'Byproduct from Fuel refining.' },
-  'Compacted Coal':    { icon:'🖤', note:'Assembler: 5 Coal + 2.5 Sulfur → 5 Compacted Coal.' },
-  'Petroleum Coke':    { icon:'🪨', note:'Refinery: 40 HOR → 120 Coke. Coal substitute.' },
-  'Solid Biofuel':     { icon:'🌿', note:'Constructor from biomass.' },
+  // Byproducts — no upstream recipe, treated as extraction roots by the resolver.
+  // This is intentional: byproduct credits are a known limitation (see README).
+  // The resolver conservatively demands their parent recipe's raw inputs independently.
+  'Heavy Oil Residue': { icon:'⬛', note:'Byproduct of Plastic/Rubber refining. No standalone recipe.' },
+  'Polymer Resin':     { icon:'🟤', note:'Byproduct of Fuel (Crude Oil) refining. No standalone recipe.' },
+  'Dark Matter Residue':{ icon:'🌑', note:'Byproduct of Quantum Encoder recipes. No standalone recipe.' },
+  // Biomass — hand-harvested, not extractable by machine. Treated as raw.
+  'Wood':              { icon:'🪵', note:'Hand-harvested or from Chainsaw. Not machine-extractable.' },
 };
 
 // ── RECIPE_DB: item → array of variants. Index 0 = vanilla always.
@@ -615,6 +619,24 @@ const RECIPE_DB = {
     out:[{item:'Screw',rate:50}], in:[{item:'Iron Ingot',rate:12.5}] },
   { label:'Steel Screw', machine:'Constructor', mw:4, icon:'🔩', layer:'L1',
     out:[{item:'Screw',rate:260}], in:[{item:'Steel Beam',rate:5}] },
+],
+'Compacted Coal':[
+  { label:'Compacted Coal', machine:'Assembler', mw:15, icon:'🖤', layer:'L1',
+    out:[{item:'Compacted Coal',rate:5}],
+    in:[{item:'Coal',rate:5},{item:'Sulfur',rate:2.5}],
+    altNote:'Used in Turbofuel (Refinery) and Compacted Steel Ingot (Foundry). 2.5× energy density vs raw coal in Coal Generators.' },
+],
+'Petroleum Coke':[
+  { label:'Petroleum Coke', machine:'Refinery', mw:30, icon:'🪨', layer:'Oil',
+    out:[{item:'Petroleum Coke',rate:120}],
+    in:[{item:'Heavy Oil Residue',rate:40}],
+    altNote:'HOR sink option when not running Diluted Fuel loop. Substitutes Coal in Coke Steel Ingot and Electrode Aluminum Scrap recipes. Lower value than full HOR recycling.' },
+],
+'Solid Biofuel':[
+  { label:'Solid Biofuel', machine:'Constructor', mw:4, icon:'🌿', layer:'L1',
+    out:[{item:'Solid Biofuel',rate:60}],
+    in:[{item:'Wood',rate:90}],
+    altNote:'Also craftable from many other biomass types (Leaves, Mycelia, etc.) at varying rates. Used as fuel in Liquid Biofuel recipe and Turbo Blend Fuel alt. Wood treated as raw for this recipe.' },
 ],
 'Steel Beam':[
   { label:'Steel Beam', machine:'Constructor', mw:4, icon:'📏', layer:'L1',
@@ -1304,31 +1326,49 @@ const GM_ELEVATOR_OPTS = [0.25, 0.5, 0.75, 1, 2, 5, 10, 25, 50, 100];
 //  RESOLVER
 // ══════════════════════════════════════════════════════════════
 function resolve(targets){
+  // ── PASS 1: accumulate total demand for every item in the chain.
+  // No visited set — every branch must contribute its full demand to shared
+  // intermediates (e.g. Iron Ingot demanded by both Iron Plate and Iron Rod
+  // branches must sum correctly). A depth limit guards against infinite
+  // recursion on cyclic alt recipes (Recycled Plastic/Rubber loop).
   const needed={};
-  const vis1=new Set();
-  function req1(item,rate){
-    if(!needed[item])needed[item]=0; needed[item]+=rate;
-    if(vis1.has(item)) return; vis1.add(item);
+  const MAX_DEPTH=60;
+  function req1(item, rate, depth){
+    if(depth>MAX_DEPTH) return; // cycle guard — cyclic alts trigger loop warning separately
+    if(!needed[item]) needed[item]=0;
+    needed[item]+=rate;
     if(isRaw(item)) return;
     const r=getActiveRecipe(item); if(!r) return;
     const po=r.out.find(o=>o.item===item); if(!po) return;
-    r.in.forEach(i=>req1(i.item, i.rate*(rate/po.rate)));
+    r.in.forEach(i=>req1(i.item, i.rate*(rate/po.rate), depth+1));
   }
-  targets.forEach(t=>req1(t.item,t.rate));
+  targets.forEach(t=>req1(t.item, t.rate, 0));
 
+  // ── PASS 2: resolve machine counts using the correct totals from pass 1.
+  // Visited set is correct here — each item is resolved exactly once using
+  // its fully-accumulated demand total. Input rates are derived from machine
+  // counts (total/po.rate), not from the call-site rate argument.
   const needed2={};
   const vis2=new Set();
-  function req2(item,rate){
-    if(!needed2[item])needed2[item]=0; needed2[item]+=rate;
+  function req2(item){
     if(vis2.has(item)) return; vis2.add(item);
     if(isRaw(item)) return;
     const r=getActiveRecipe(item); if(!r) return;
     const po=r.out.find(o=>o.item===item); if(!po) return;
-    const totalNeeded=needed[item]||rate; // fallback to current rate if not in pass1
-    const m=totalNeeded/po.rate;
-    r.in.forEach(i=>req2(i.item,i.rate*m));
+    const totalNeeded=needed[item]; if(!totalNeeded) return;
+    const m=totalNeeded/po.rate; // machines needed
+    r.in.forEach(i=>{
+      if(!needed2[i.item]) needed2[i.item]=0;
+      needed2[i.item]+=i.rate*m;
+      req2(i.item);
+    });
   }
-  targets.forEach(t=>req2(t.item,t.rate));
+  // Seed pass 2 with targets, then resolve all needed items
+  targets.forEach(t=>{
+    if(!needed2[t.item]) needed2[t.item]=0;
+    needed2[t.item]+=t.rate;
+  });
+  Object.keys(needed).forEach(item=>req2(item));
 
   const machines={}, raws={};
   Object.entries(needed2).forEach(([item,totalRate])=>{
@@ -1609,6 +1649,20 @@ function renderPlannerRight(){
     h+=`<div class="aiu"><span class="aiu-l">ALTS ACTIVE:</span>${altsUsed.map(m=>`<span class="aiu-tag">◆ ${m.altLabel}</span>`).join('')}</div>`;
   }
 
+  // Loop warning — recycled plastic/rubber alts create circular dependencies
+  // the resolver breaks the cycle but under-reports raw oil demand as a result
+  const loopAlts=['Recycled Plastic','Recycled Rubber'];
+  const hasLoopAlt=loopAlts.some(la=>Object.entries(PS.altSelections).some(([item,idx])=>
+    idx>0 && RECIPE_DB[item]?.[idx]?.label===la
+  ));
+  if(hasLoopAlt){
+    h+=`<div class="gm-active-strip" style="border-color:rgba(176,108,255,.4);background:rgba(176,108,255,.06);color:var(--purple);">
+      ♻ LOOP ALT ACTIVE — Recycled Plastic/Rubber creates a circular dependency.
+      The resolver breaks the cycle conservatively: Crude Oil demand may be under-reported by 40–60%.
+      Verify raw oil totals manually using the Reference tab loop ratios.
+    </div>`;
+  }
+
   // Share bar
   pushState();
   h+=`<div class="share-bar">
@@ -1740,7 +1794,7 @@ function renderPlannerRight(){
   const rawMltNote=gmMltActive?` <span style="font-family:var(--mono);font-size:8px;color:var(--orange);">×${GM.recipe} COST MULTIPLIER ACTIVE</span>`:'';
   h+=`<div class="rsec"><div class="rshdr"><span class="rs-t">⛏ Raw Resources</span><span class="rs-c">${rawCount} TYPES</span>${rawMltNote}</div><div class="rgrid">
     ${Object.entries(raws).sort((a,b)=>b[1]-a[1]).map(([item,rate])=>{
-      const noExtractor=['Water','Heavy Oil Residue','Polymer Resin','Compacted Coal','Petroleum Coke','Solid Biofuel'].includes(item);
+      const noExtractor=['Water','Heavy Oil Residue','Polymer Resin','Dark Matter Residue'].includes(item); // byproducts — no miner count
       const ico=RAWS[item]?.icon||'⛏';
 
       // Rate display — strike base, show multiplied in amber if recipe cost is active
